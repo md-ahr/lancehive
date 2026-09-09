@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\User;
+use Dedoc\Scramble\Scramble;
+use Dedoc\Scramble\Support\Generator\OpenApi;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\Gate;
@@ -44,5 +46,12 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::define('freelancer', fn (User $user) => $user->isFreelancer());
         Gate::define('client', fn (User $user) => $user->isClient());
+
+        Scramble::configure()
+            ->withDocumentTransformers(function (OpenApi $openApi): void {
+                $openApi->info->title = config('scramble.ui.title', config('app.name').' API');
+            });
+
+        Gate::define('viewApiDocs', fn (?User $user = null) => app()->environment(['local', 'testing']));
     }
 }

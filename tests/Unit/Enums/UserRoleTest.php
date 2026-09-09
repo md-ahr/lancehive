@@ -9,8 +9,13 @@ use Tests\TestCase;
 class UserRoleTest extends TestCase
 {
     #[DataProvider('roleProvider')]
-    public function test_role_helpers(UserRole $role, bool $isFreelancer, bool $isClient): void
-    {
+    public function test_role_helpers(
+        UserRole $role,
+        bool $isSuperAdmin,
+        bool $isFreelancer,
+        bool $isClient,
+    ): void {
+        $this->assertSame($isSuperAdmin, $role->isSuperAdmin());
         $this->assertSame($isFreelancer, $role->isFreelancer());
         $this->assertSame($isClient, $role->isClient());
     }
@@ -18,15 +23,16 @@ class UserRoleTest extends TestCase
     public static function roleProvider(): array
     {
         return [
-            'freelancer' => [UserRole::Freelancer, true, false],
-            'client' => [UserRole::Client, false, true],
+            'super admin' => [UserRole::SuperAdmin, true, false, false],
+            'freelancer' => [UserRole::Freelancer, false, true, false],
+            'client' => [UserRole::Client, false, false, true],
         ];
     }
 
     public function test_values_returns_all_role_strings(): void
     {
         $this->assertSame(
-            ['freelancer', 'client'],
+            ['super_admin', 'freelancer', 'client'],
             UserRole::values(),
         );
     }

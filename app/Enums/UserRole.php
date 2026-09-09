@@ -4,8 +4,14 @@ namespace App\Enums;
 
 enum UserRole: string
 {
+    case SuperAdmin = 'super_admin';
     case Freelancer = 'freelancer';
     case Client = 'client';
+
+    public function isSuperAdmin(): bool
+    {
+        return $this === self::SuperAdmin;
+    }
 
     public function isFreelancer(): bool
     {

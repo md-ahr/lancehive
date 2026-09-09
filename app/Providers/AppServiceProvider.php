@@ -44,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
                 .'&email='.urlencode($user->email);
         });
 
+        Gate::define('super-admin', fn (User $user) => $user->isSuperAdmin());
         Gate::define('freelancer', fn (User $user) => $user->isFreelancer());
         Gate::define('client', fn (User $user) => $user->isClient());
 

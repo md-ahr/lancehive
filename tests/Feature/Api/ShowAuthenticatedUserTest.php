@@ -18,7 +18,7 @@ class ShowAuthenticatedUserTest extends TestCase
             ->assertUnauthorized();
     }
 
-    public function test_client_cannot_access_freelancer_only_users_endpoint(): void
+    public function test_client_cannot_access_users_endpoint(): void
     {
         Sanctum::actingAs(User::factory()->client()->create());
 
@@ -26,12 +26,21 @@ class ShowAuthenticatedUserTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_freelancer_can_list_all_users(): void
+    public function test_freelancer_cannot_access_users_endpoint(): void
     {
-        $freelancer = User::factory()->freelancer()->create();
-        $clients = User::factory()->client()->count(2)->create();
+        Sanctum::actingAs(User::factory()->freelancer()->create());
 
-        Sanctum::actingAs($freelancer);
+        $this->getJson('/api/users')
+            ->assertForbidden();
+    }
+
+    public function test_super_admin_can_list_all_users(): void
+    {
+        $superAdmin = User::factory()->superAdmin()->create();
+        $freelancer = User::factory()->freelancer()->create();
+        $client = User::factory()->client()->create();
+
+        Sanctum::actingAs($superAdmin);
 
         $this->getJson('/api/users')
             ->assertOk()
@@ -42,21 +51,26 @@ class ShowAuthenticatedUserTest extends TestCase
             ])
             ->assertJsonCount(3, 'users')
             ->assertJsonFragment([
+                'id' => $superAdmin->id,
+                'email' => $superAdmin->email,
+                'role' => UserRole::SuperAdmin->value,
+            ])
+            ->assertJsonFragment([
                 'id' => $freelancer->id,
-                'email' => $freelancer->email,
                 'role' => UserRole::Freelancer->value,
             ])
             ->assertJsonFragment([
-                'id' => $clients[0]->id,
+                'id' => $client->id,
                 'role' => UserRole::Client->value,
             ]);
     }
 
-    public function test_freelancer_can_list_all_users_with_bearer_token(): void
+    public function test_super_admin_can_list_all_users_with_bearer_token(): void
     {
-        User::factory()->client()->count(2)->create();
-        $freelancer = User::factory()->freelancer()->create();
-        $token = $freelancer->createToken('test-token')->plainTextToken;
+        User::factory()->freelancer()->create();
+        User::factory()->client()->create();
+        $superAdmin = User::factory()->superAdmin()->create();
+        $token = $superAdmin->createToken('test-token')->plainTextToken;
 
         $this->withToken($token)
             ->getJson('/api/users')

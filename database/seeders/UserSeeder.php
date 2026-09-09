@@ -12,9 +12,14 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->freelancer()->create([
-            'name' => 'Admin Freelancer',
+        User::factory()->superAdmin()->create([
+            'name' => 'Super Admin',
             'email' => 'admin@lancehive.com',
+        ]);
+
+        User::factory()->freelancer()->create([
+            'name' => 'Freelancer',
+            'email' => 'freelancer@lancehive.com',
         ]);
 
         User::factory()

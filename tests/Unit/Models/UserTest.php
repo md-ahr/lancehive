@@ -33,5 +33,15 @@ class UserTest extends TestCase
 
         $this->assertTrue($user->isClient());
         $this->assertFalse($user->isFreelancer());
+        $this->assertFalse($user->isSuperAdmin());
+    }
+
+    public function test_is_super_admin_returns_true_for_super_admin(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        $this->assertTrue($user->isSuperAdmin());
+        $this->assertFalse($user->isFreelancer());
+        $this->assertFalse($user->isClient());
     }
 }

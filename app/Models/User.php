@@ -33,6 +33,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function isSuperAdmin(): bool
+    {
+        return $this->role?->isSuperAdmin() ?? false;
+    }
+
     public function isFreelancer(): bool
     {
         return $this->role?->isFreelancer() ?? false;

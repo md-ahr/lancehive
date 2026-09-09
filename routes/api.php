@@ -22,6 +22,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me'])->name('my_profile');
 
     Route::get('/users', [UserController::class, 'index'])
-        ->middleware('can:freelancer')
+        ->middleware('can:super-admin')
         ->name('users');
 });

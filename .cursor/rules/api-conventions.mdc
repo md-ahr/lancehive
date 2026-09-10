@@ -6,6 +6,10 @@ alwaysApply: false
 
 # API Conventions
 
+HTTP contract: `docs/api/conventions.md` · Auth: `docs/development/security-and-auth.md` · Errors: `docs/development/error-handling.md`
+
+Activate **`lancehive-api-contract`** for endpoint markdown · **`lancehive-guardrails`** for auth/error/test planning.
+
 ## Versioning
 
 - All routes: **`/api/v1/...`** — Laravel `api` prefix + `config('api.route_version')` in `routes/api.php`.
@@ -34,9 +38,16 @@ See `api-scramble-docs.mdc`. Summary: `#[Group]` on controller · Form Request +
 
 ## Route groups
 
-- Tenant: `auth:sanctum` + `freelancer.context`
+- Tenant read: `auth:sanctum` + `freelancer.context`
+- Tenant write: above + `writable.subscription`
 - Admin: `prefix('admin')` + `can:super-admin`
-- Writes when subscription lapses: blocked by `EnsureWritableSubscription` (reads always allowed)
+- Subscription self-serve: `freelancer.context` — writes allowed when workspace read-only
+
+## Errors
+
+- Validation → `422` (Laravel envelope, no `code`)
+- Business/auth → `throw new ApiException(ApiErrorCode::…)` — see `error-handling.mdc`
+- Cross-tenant resource ID → **404** `not_found` — never 403
 
 ## Caching
 

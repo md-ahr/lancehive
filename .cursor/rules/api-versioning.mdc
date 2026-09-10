@@ -6,6 +6,8 @@ alwaysApply: false
 
 # API Versioning (`/api/v1`)
 
+Detail: `docs/api/conventions.md` · Skill: `lancehive-conventions`
+
 ## Config
 
 - `config/api.php` — `route_version`, `prefix` (`api/v1`), `features_routes` (`routes/features/v1`)

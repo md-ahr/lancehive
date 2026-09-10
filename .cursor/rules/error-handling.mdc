@@ -1,0 +1,56 @@
+---
+description: ApiException, ApiErrorCode, and API error envelopes
+globs: app/Core/Http/**,bootstrap/app.php,app/Features/**/Actions/**,app/Features/**/Services/**
+alwaysApply: false
+---
+
+# Error Handling
+
+Full spec: `docs/development/error-handling.md` · Catalog: `docs/api/errors.md`
+
+Activate **`lancehive-guardrails`** before adding or changing error behavior.
+
+## Envelopes
+
+| Type | HTTP | Body |
+|------|------|------|
+| Validation | 422 | Laravel default — `message` + `errors` — **no** `code` |
+| Business / auth | varies | `message` + `code` via `ApiException` |
+
+## Implementation
+
+```php
+throw new ApiException(ApiErrorCode::PlanLimitExceeded, 'Starter plan allows 3 clients.');
+```
+
+- Enum: `App\Core\Http\Enums\ApiErrorCode`
+- Exception: `App\Core\Http\Exceptions\ApiException`
+- Rendered in `bootstrap/app.php` for `api/*` requests
+
+Throw from **Action/Service** or middleware — not `response()->json()` in controllers.
+
+## Status mapping (critical)
+
+| Scenario | HTTP | `code` |
+|----------|------|--------|
+| Cross-tenant resource ID | 404 | `not_found` |
+| Same-tenant policy deny | 403 | `forbidden` |
+| Missing token | 401 | `unauthenticated` |
+| Read-only subscription write | 403 | `workspace_read_only` |
+| Plan limit | 422 | `plan_limit_exceeded` |
+
+**Never** 403 for cross-tenant IDs — leaks existence.
+
+## New error code checklist
+
+1. `ApiErrorCode` case + `httpStatus()`
+2. `ApiException::defaultMessage()`
+3. `docs/api/errors.md` + endpoint `Errors` table
+4. Feature or render test
+
+## Do not
+
+- Return `200` with `{ success: false }`
+- Use HTTP 400 for validation (use 422)
+- Expose stack traces or SQL to API clients in production
+- Add ad-hoc `code` strings outside `ApiErrorCode`

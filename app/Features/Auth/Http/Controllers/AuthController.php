@@ -7,10 +7,12 @@ namespace App\Features\Auth\Http\Controllers;
 use App\Features\Auth\Http\Requests\ForgotPasswordRequest;
 use App\Features\Auth\Http\Requests\LoginRequest;
 use App\Features\Auth\Http\Requests\ResetPasswordRequest;
+use App\Features\Auth\Http\Resources\LoginResource;
+use App\Features\Auth\Http\Resources\MeResource;
+use App\Features\Auth\Http\Resources\MessageResource;
 use App\Features\Auth\Models\User;
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -19,7 +21,7 @@ use Illuminate\Validation\ValidationException;
 #[Group('Authentication', weight: 0)]
 final class AuthController extends Controller
 {
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request): LoginResource
     {
         $user = User::where('email', $request->email)->first();
 
@@ -33,34 +35,36 @@ final class AuthController extends Controller
 
         $token = $user->createToken('api-token')->plainTextToken;
 
-        return response()->json([
+        return new LoginResource([
             'token' => $token,
             'user' => $user,
         ]);
     }
 
-    public function logout(Request $request): JsonResponse
+    public function logout(Request $request): MessageResource
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Logged out successfully.']);
+        return new MessageResource([
+            'message' => 'Logged out successfully.',
+        ]);
     }
 
-    public function me(Request $request): JsonResponse
+    public function me(Request $request): MeResource
     {
-        return response()->json(['user' => $request->user()]);
+        return new MeResource($request->user());
     }
 
-    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
+    public function forgotPassword(ForgotPasswordRequest $request): MessageResource
     {
         Password::sendResetLink($request->only('email'));
 
-        return response()->json([
+        return new MessageResource([
             'message' => 'If that email address exists, a password reset link has been sent.',
         ]);
     }
 
-    public function resetPassword(ResetPasswordRequest $request): JsonResponse
+    public function resetPassword(ResetPasswordRequest $request): MessageResource
     {
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
@@ -71,7 +75,9 @@ final class AuthController extends Controller
         );
 
         if ($status === Password::PASSWORD_RESET) {
-            return response()->json(['message' => 'Password reset successfully.']);
+            return new MessageResource([
+                'message' => 'Password reset successfully.',
+            ]);
         }
 
         throw ValidationException::withMessages([

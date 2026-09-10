@@ -15,30 +15,63 @@ alwaysApply: true
 
 Feature slices under `app/Features/{Name}/` (not versioned) · route files in `routes/features/v1/` · URLs `/api/v1` via `config/api.php` · tests `tests/Feature/{Name}/` + `$this->apiUrl()`.
 
-## Token guard
+## Global rules (always on)
 
-1. **Do not** read all of `docs/` — open **one** doc when needed (see table).
-2. **Do not** re-read `AGENTS.md` / `CLAUDE.md` if a scoped `.cursor/rules/*.mdc` already covers the path.
-3. Use Boost MCP (`search-docs`, `database-schema`, `database-query`) before opening migration files or grepping the repo.
-4. For build tasks, read **only** the current task block in `docs/multi-tenant/implementation-tasks.md` via `lancehive-build-task` skill.
-5. Run the **narrowest** test file after each change — never the full suite unless asked.
+| Rule | Purpose |
+|------|---------|
+| `01-ai-token-guard.mdc` | Minimum context, reads, output |
+| `02-agent-verification.mdc` | When to run Sail tests, Pint, builds |
+
+## Token guard (summary)
+
+1. **Do not** read all of `docs/` — one doc from the table below.
+2. **Do not** re-read `AGENTS.md` / `CLAUDE.md` if a scoped rule already covers the path.
+3. Build tasks → current task block only (`lancehive-build-task`).
+4. Auth/errors/tests → `lancehive-guardrails` first.
+5. Verification → `02-agent-verification.mdc` (narrow Pest after code changes; never full suite unless asked).
 
 ## Doc index (load on demand)
 
 | Need | File |
 |------|------|
-| Build order / acceptance | `docs/multi-tenant/implementation-tasks.md` |
+| Build order / acceptance | `docs/multi-tenant/implementation-tasks.md` · deep ref `acceptance-criteria.md` (Phases 2, 11, 15) |
+| Coding style & layers | `docs/development/coding-conventions.md` |
+| Naming & folder rules | `docs/development/naming-and-folders.md` |
+| Stack, deps, `.env` | `docs/development/stack-and-environment.md` |
+| Security & auth | `docs/development/security-and-auth.md` |
+| Error handling | `docs/development/error-handling.md` |
+| Testing strategy | `docs/development/testing-strategy.md` |
 | Folder layout / layers | `docs/project-structure/feature-based-architecture.md` |
 | Domain & billing names | `docs/multi-tenant/architecture-overview.md` |
 | Tenant query rules | `docs/multi-tenant/design-rationale-and-scaling.md` |
 | Module imports | `docs/project-structure/feature-based-architecture.md` §6 |
 | Indexes / ERD | `docs/multi-tenant/database-erd.md` |
 | API versioning & folders | `api-versioning.mdc` · `docs/project-structure/feature-based-architecture.md` §8.1 |
+| API contract (markdown) | `docs/api/README.md` · `docs/api/conventions.md` · `docs/api/errors.md` |
+
+## Rules index (auto-apply by path)
+
+| Rule | When loaded |
+|------|-------------|
+| `01-ai-token-guard.mdc` | Always — context and read budget |
+| `02-agent-verification.mdc` | Always — test/build/migrate policy |
+| `feature-architecture.mdc` | `app/Features/**` |
+| `api-conventions.mdc` | HTTP layer, routes, pagination |
+| `api-scramble-docs.mdc` | Controllers, routes, API doc tests |
+| `tenancy-isolation.mdc` | Tenancy core, middleware, policies, isolation tests |
+| `error-handling.mdc` | `ApiException`, actions, services |
+| `testing-required.mdc` | `tests/**` |
+| `postgres-laravel13.mdc` | migrations, PostgreSQL-specific |
+| `api-versioning.mdc` | route versioning questions |
 
 ## Every task ships tests + API docs
 
 Unit test · feature test · Scramble path assertion in OpenAPI spec. See `testing-required.mdc`, `api-scramble-docs.mdc`, skills below.
 
+## Task checklist
+
+After a task passes tests, mark it `[x]` in `docs/multi-tenant/implementation-tasks.md` § Task checklist (see `lancehive-build-task` skill).
+
 ## Skills (activate when relevant)
 
-`lancehive-build-task` · `lancehive-architecture` · `lancehive-testing` · `lancehive-api-docs`
+`lancehive-build-task` · `lancehive-guardrails` · `lancehive-architecture` · `lancehive-conventions` · `lancehive-testing` · `lancehive-api-docs` · `lancehive-api-contract`

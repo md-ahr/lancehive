@@ -5,6 +5,8 @@ description: Use when adding or changing API endpoints. Ensures Scramble OpenAPI
 
 # LanceHive API Docs (Scramble)
 
+Contract markdown: `docs/api/` via **`lancehive-api-contract`**. Auth/errors: **`lancehive-guardrails`**. Rule: `api-scramble-docs.mdc`.
+
 ## File placement
 
 | Artifact | Path |
@@ -21,6 +23,7 @@ description: Use when adding or changing API endpoints. Ensures Scramble OpenAPI
 - [ ] Tenant routes: `#[HeaderParameter('X-Freelancer-Id', …, required: true)]` on controller
 - [ ] List routes: document `per_page` (1–100) and `cursor` in index Form Request
 - [ ] `#[Endpoint(title:, description:)]` when behavior is non-obvious
+- [ ] Update `docs/api/endpoints/{group}.md` (request, response, Errors table)
 - [ ] Test: assert path exists in OpenAPI spec
 
 ## Controller pattern

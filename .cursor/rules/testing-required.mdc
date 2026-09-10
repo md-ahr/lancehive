@@ -6,6 +6,12 @@ alwaysApply: false
 
 # Testing (required per task)
 
+Full plan: `docs/development/testing-strategy.md`
+
+Activate **`lancehive-guardrails`** to write the test matrix before coding · **`lancehive-testing`** for templates.
+
+**Run policy:** `02-agent-verification.mdc` — narrow `vendor/bin/sail artisan test --compact {path}` after implementation; never full suite unless user asks.
+
 ## Rule
 
 Every implementation task from `implementation-tasks.md` ships **all three**:
@@ -32,7 +38,7 @@ tests/Feature/{Feature}/{Entity}IsolationTest.php   # tenant boundaries
 - `RefreshDatabase` applied via `tests/Pest.php` for `Feature` and `Unit/Auth`
 - `$this->apiUrl('login')` etc. — never hardcode `/api/` without version
 - `postJson` / `getJson` with Sanctum `actingAs($user)`
-- Tenant requests: `withHeader('X-Freelancer-Id', $freelancer->id)`
+- Tenant requests: `$this->actingAsTenant($user, $freelancer)` or `createTenantWorkspace()` from `Tests\Concerns\ActsAsTenant`
 - Datasets: `dataset()` + `->with('name')` for parameterized cases
 
 ## Run
@@ -43,4 +49,4 @@ tests/Feature/{Feature}/{Entity}IsolationTest.php   # tenant boundaries
 
 ## Isolation (Phase 11+)
 
-Cross-tenant access must return 404 or 403 — never leak another workspace's data.
+Cross-tenant resource ID → **404** `not_found`. Same-tenant policy deny → **403**. Never leak another workspace's data. See `tenancy-isolation.mdc`.

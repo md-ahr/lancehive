@@ -6,6 +6,8 @@ alwaysApply: false
 
 # Feature Architecture
 
+Detail: `docs/project-structure/feature-based-architecture.md` · Auth/tenancy: `docs/development/security-and-auth.md`
+
 ## Layout
 
 `app/Features/{Feature}/` → `Actions/`, `Services/`, `Http/{Controllers,Requests,Resources}/`, `Models/`, `Enums/`, `Policies/`, `Jobs/`

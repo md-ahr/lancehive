@@ -6,7 +6,9 @@ alwaysApply: false
 
 # Scramble API Docs (required per endpoint)
 
-Docs UI: `/docs/api` · OpenAPI: `/docs/api.json` · Package: `dedoc/scramble` · Base: **`/api/v1`**
+Docs UI: `/docs/api` · OpenAPI: `/docs/api.json` · Contract markdown: `docs/api/` · Skill: **`lancehive-api-docs`** + **`lancehive-api-contract`**
+
+Package: `dedoc/scramble` · Base: **`/api/v1`**
 
 Route file: `routes/features/v1/{feature}.php` · Controller/Resource: `app/Features/{Feature}/Http/` (no `V1/` subfolder).
 
@@ -56,8 +58,13 @@ vendor/bin/sail artisan test --compact tests/Feature/Api/DocumentationTest.php
 
 Add the new path to `DocumentationTest` (or a feature-scoped doc test) — assert `paths` contains the route.
 
+## Contract markdown (keep in sync)
+
+When adding/changing endpoints, update matching `docs/api/endpoints/{group}.md` — auth, middleware, request, response, **Errors** table. Cross-check `docs/api/errors.md`.
+
 ## Do not
 
 - `#[ExcludeRouteFromDocs]` unless truly internal.
 - Return untyped `response()->json([...])` for new endpoints — blocks accurate response schemas.
 - Skip doc test updates when adding routes.
+- Skip `docs/api/` update when request/response shapes change.

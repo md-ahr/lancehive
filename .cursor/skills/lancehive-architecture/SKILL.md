@@ -61,3 +61,6 @@ Detail: `docs/project-structure/feature-based-architecture.md` §8.1
 | Domain detail | `docs/multi-tenant/architecture-overview.md` |
 | Scaling rules | `docs/multi-tenant/design-rationale-and-scaling.md` |
 | Audit / indexes | `docs/multi-tenant/architecture-review.md` |
+| Security & tenancy | `docs/development/security-and-auth.md` |
+
+For policies, middleware, or isolation: activate **`lancehive-guardrails`**. Rule: `tenancy-isolation.mdc`.

@@ -6,19 +6,30 @@ alwaysApply: false
 
 # Tenancy & Isolation
 
+Full spec: `docs/development/security-and-auth.md` · Matrix: `docs/multi-tenant/acceptance-criteria.md` § Phase 2
+
+Activate **`lancehive-guardrails`** before auth, policy, or middleware work.
+
 ## Model scoping
 
 - `BelongsToFreelancer` → `Client`, `Project`, `ClientInvoice` (global scope + auto-set `freelancer_id`).
 - `BelongsToTenantViaProject` → `Task`, `TimeLog`, `ClientInvoiceItem`, `ClientInvoicePayment`.
 - **Never** `DB::table()` for tenant data in HTTP layer. **Never** unscoped `Model::query()` in controllers.
+- **Never** accept `freelancer_id` from request body — `TenantContext` only.
 
 ## Request context
 
-`TenantContext` holds active `freelancer_id`. Resolved via `EnsureFreelancerContext` middleware (`X-Freelancer-Id` header, membership fallback, super-admin `?freelancer_id=` override).
+`TenantContext` holds active `freelancer_id`. Resolved via `EnsureFreelancerContext` middleware (`X-Freelancer-Id` header, membership fallback, super-admin `?freelancer_id=` override on admin routes only).
 
 ## Authorization
 
-Policies on every tenant entity. Task/TimeLog: verify project belongs to active tenant. ClientInvoice: block writes when subscription is read-only.
+Policies on every tenant entity. Task/TimeLog: verify project belongs to active tenant.
+
+**Read-only subscription:** enforced by `writable.subscription` middleware (`403 workspace_read_only`) — **not** in policies.
+
+## Cross-tenant access
+
+Foreign workspace resource ID → **`404 not_found`** — never `403` (avoids leaking existence). Same-tenant policy deny → `403 forbidden`.
 
 ## Billing separation
 
@@ -28,4 +39,4 @@ Policies on every tenant entity. Task/TimeLog: verify project belongs to active 
 
 ## Isolation tests (required Phase 11+)
 
-For each tenant resource: user A cannot read/write user B's data (404/403). Super-admin override must be tested when applicable.
+Two workspaces; user A requests user B's resource ID → `assertNotFound()` + `code: not_found`. Super-admin override tested when applicable. Plan: `docs/development/testing-strategy.md` § Tenant isolation tests.

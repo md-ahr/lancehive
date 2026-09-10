@@ -1,0 +1,61 @@
+---
+description: "[Global] When agents may run Sail tests, Pint, builds, and other verification"
+alwaysApply: true
+---
+
+# Agent Verification Runs
+
+Controls when the agent may run commands that cost time and tokens. **All PHP/Artisan commands via `vendor/bin/sail`.**
+
+## Do not run unless the user explicitly asks
+
+- Full test suite (`vendor/bin/sail artisan test` with no path filter)
+- `vendor/bin/sail pest` with no path filter
+- `vendor/bin/sail npm run build` · `dev` · `composer run dev`
+- `vendor/bin/sail up` · `vendor/bin/sail composer install` · `vendor/bin/sail npm install`
+- `vendor/bin/sail artisan migrate` · `migrate:fresh` · `db:seed` (destructive or environment-changing)
+- Browser automation, dev-server startup, or manual API probing
+- Re-running the same passing narrow test with no code change ("just to confirm")
+
+## Run without asking (implementation work only)
+
+When the user requested **code changes** or you are executing an **implementation task** from `implementation-tasks.md`:
+
+| Command | When |
+|---------|------|
+| `vendor/bin/sail artisan test --compact {path}` | After changing PHP behavior — **narrowest file** covering the change |
+| `vendor/bin/sail bin pint --dirty --format agent` | After editing PHP files, before finishing |
+| `vendor/bin/sail artisan test --compact tests/Feature/Api/DocumentationTest.php` | After adding or changing API routes |
+
+Examples of narrow runs:
+
+```bash
+vendor/bin/sail artisan test --compact tests/Feature/Delivery/StoreClientTest.php
+vendor/bin/sail artisan test --compact tests/Unit/Core/ApiErrorCodeTest.php
+```
+
+Per `testing-required.mdc`: implementation tasks ship unit + feature + doc tests — run each **changed** test file, not the full suite.
+
+## Do not run tests (question / review / docs-only)
+
+When the user only asked to **explain**, **review**, **plan**, or **edit markdown/docs** with no PHP behavior change:
+
+- Do not run Pest, Pint, or Sail builds.
+- Say verification was not run if relevant.
+
+## Conflict resolution
+
+| Source | Rule |
+|--------|------|
+| This file | No full suite; no npm/build/migrate unless asked |
+| `testing-required.mdc` | Unit + feature + doc test per implementation task |
+| `00-lancehive-core.mdc` | Narrowest test after code change |
+| User message | Explicit command request wins |
+
+If unsure whether behavior changed, ask in one sentence before running tests.
+
+## Report when skipped
+
+For implementation tasks where tests were not run (e.g. Sail unavailable, user said stop):
+
+> Narrow tests not run — run: `vendor/bin/sail artisan test --compact {path}`

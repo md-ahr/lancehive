@@ -31,15 +31,18 @@ You can also watch bite-sized lessons with real-world projects on [Laravel Learn
 
 ## Agentic Development
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+LanceHive is built for AI-assisted development (Cursor, Claude Code, Copilot). Start here:
 
-```bash
-composer require laravel/boost --dev
+| Resource | Purpose |
+|----------|---------|
+| [Development guide](docs/development/README.md) | Conventions, security, errors, testing |
+| [Implementation tasks](docs/multi-tenant/implementation-tasks.md) | Ordered build backlog + checklist |
+| [`.ai/rules/`](.ai/rules/index.md) | Path-scoped rules for agents (read `index.md` first) |
+| [`.cursor/skills/`](.cursor/skills/) | LanceHive skills (`lancehive-build-task`, `lancehive-guardrails`, …) |
 
-php artisan boost:install
-```
+**Example prompt:** `Implement task 2.1 using lancehive-build-task. Activate lancehive-guardrails.`
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+[Laravel Boost](https://laravel.com/docs/ai) is installed — MCP via `.mcp.json` (`vendor/bin/sail artisan boost:mcp`). Run all PHP/Artisan commands through Sail (`vendor/bin/sail artisan …`).
 
 ## Contributing
 

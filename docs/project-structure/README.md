@@ -9,6 +9,7 @@ Documentation for how LanceHive organizes files and folders using **feature-base
 
 ## Related docs
 
+- [Development guide](../development/README.md) — coding conventions, naming, stack, security, errors, tests, Cursor skills/rules
 - [Multi-tenant architecture](../multi-tenant/architecture-overview.md) — domain model, tenancy, billing
 - [Architecture review](../multi-tenant/architecture-review.md) — module dependency graph and layer rules
 - [Implementation tasks](../multi-tenant/implementation-tasks.md) — build order (Phase 2+ assumes this structure)

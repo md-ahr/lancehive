@@ -1,0 +1,136 @@
+---
+description: "[Global] Token guard — minimum context, reads, and output for correct fixes"
+alwaysApply: true
+---
+
+# AI Token Guard
+
+Solve the task with the least context, tool output, and file reads needed for a **correct** fix.
+
+Hard requirement for every chat. Follow unless the user explicitly overrides in the current message.
+
+## Enforcement
+
+- Treat limits as hard stops, not suggestions.
+- Before exceeding a limit, ask the user in one short sentence.
+- If enough evidence exists to answer or patch, stop reading and act.
+- Do not restate that rules were read unless the next action follows them.
+
+## LanceHive bootstrap (once per session)
+
+1. `00-lancehive-core.mdc` is always on — do not reread it every turn.
+2. Load **one** doc from the core doc index when needed — never read all of `docs/`.
+3. For build tasks: **only** the current task block in `implementation-tasks.md` via `lancehive-build-task`.
+4. For auth/errors/tests: `lancehive-guardrails` → one matching spec (`security-and-auth`, `error-handling`, or `testing-strategy`).
+5. Activate other skills only when the task requires them — not preemptively.
+6. Use Boost MCP (`search-docs`, `database-schema`, `database-query`) before opening migrations or grepping schema.
+7. Path-scoped rules (`tenancy-isolation.mdc`, `error-handling.mdc`, etc.) apply automatically — do not reread them if already in context.
+
+Do not reread rules, skills, or docs already loaded this session unless the repo area changed or the user asked to reread.
+
+## Core search and read rules
+
+- Start with one narrow search using a unique identifier (class name, route name, `ApiErrorCode` case, policy method, test name).
+- Prefer `Grep` with `head_limit` over broad repo exploration.
+- Read only the needed fragment when a fragment is enough.
+- Reuse context already gathered — no rereading without a new reason.
+- After editing, reread only the changed fragment unless a new hypothesis appears.
+- Do not inspect adjacent files unless the current file clearly cannot contain the fix.
+- Do not expand across layers (HTTP → Action → Policy → migration) without evidence.
+
+## Small change mode
+
+For a local fix in one class, one test, one doc block, or one route:
+
+1. One narrow search → one candidate file → one fragment.
+2. Second file only if the first clearly cannot contain the fix.
+3. No parallel reads of multiple large candidates before localizing.
+4. Fix at the first strong match before searching wider.
+
+Priority: minimum context → minimum output → minimum file count.
+
+## Doc and spec reads
+
+| Need | Read only |
+|------|-----------|
+| Current task | One block in `implementation-tasks.md` |
+| Policy matrix | `acceptance-criteria.md` § Phase 2, 11, or 15 — not whole file |
+| API contract | Matching `docs/api/endpoints/{group}.md` + schema |
+| Errors | `docs/api/errors.md` or `error-handling.md` — not both unless adding codes |
+| Architecture | One file from `lancehive-architecture` table |
+
+Files over 200 lines: locate heading first, read that section only.
+
+## Before a new check
+
+- If the answer is already known from evidence, do not read more.
+- If you reread, state what changed.
+- After a local fix, verify only the changed area first.
+
+## Output rules
+
+- Keep answers brief; prefer result over narration.
+- No long reports for small fixes.
+- No progress commentary ("checking", "now editing", "found").
+- For simple fixes: 1–3 short lines after the edit.
+- Do not paste large code blocks when the file was edited in-repo.
+- Do not echo full rule files or docs unless the user asked for the text.
+
+## Hard stops
+
+- Do not read 10+ files "just in case".
+- Do not loop on the same large file.
+- Do not parallel-read several large candidates before localizing.
+- Do not widen scope after root cause is found.
+- Do not print full diffs for files over 200 lines — use narrow path or hunk.
+- Do not read more than ~40 lines from a large file until search identified the target.
+- Do not load optional skills (laravel-best-practices, testing-best-practices, infer-conventions) unless the operation needs them.
+
+## Debugging budget ladder
+
+1. **Exact error / file / line provided** → inspect that location; patch.
+2. **Known feature from session** → reuse context; one caller/callee if needed.
+3. **Unknown area** → one doc lookup + one narrow code search → patch or ask.
+
+Caps before asking:
+
+- Exact-error follow-up: 1 search, 1 fragment, 1 patch.
+- Same-area bug after prior work: 2 searches, 2 fragments, 1 patch.
+- Cross-feature bug: 1 search per feature, then patch or ask.
+
+## Subagent offload (when available)
+
+Delegate broad exploration to `explore` or `generalPurpose` subagents when:
+
+- Finding usages across many files
+- Reading 3+ files or 2+ non-adjacent regions
+- Tracing endpoint → controller → action → policy flow
+
+Give a narrow objective: files, lines, root cause, 3–5 bullets. Main agent patches from the handoff.
+
+Skip subagents for literal one-file / one-hunk edits with known target lines.
+
+## Intent triage before tools
+
+| Intent | Action |
+|--------|--------|
+| Answer-only / review-only | No project tools unless needed to read cited code |
+| Exact-error follow-up | Named file + previous hunk only |
+| Local edit | One narrow lookup → patch |
+| Implementation task | `lancehive-build-task` block + scoped rules + minimal reads |
+| Investigation | Minimum evidence plan; stop when found |
+
+## Patch discipline
+
+- Smallest viable patch — no adjacent "hardening" unless the same failure reaches it.
+- User wording is the contract; do not expand scope silently.
+- Cross-boundary changes (route + policy + test) are allowed when the task requires them — not for speculative cleanup.
+- New error after patch: inspect new error + changed hunk only.
+
+## Meta / cost requests
+
+If the user asks about token usage or cost:
+
+- Answer in 3–6 bullets from existing context.
+- Do not reread project files unless editing a rule.
+- Name top 1–3 waste sources; do not run broad exploration.

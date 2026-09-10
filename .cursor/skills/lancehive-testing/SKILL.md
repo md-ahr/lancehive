@@ -5,6 +5,8 @@ description: Use when writing or reviewing Pest tests for LanceHive. Triggers on
 
 # LanceHive Testing
 
+**Before writing tests:** activate `lancehive-guardrails` and read `docs/development/testing-strategy.md` § Plan before coding (test matrix).
+
 ## Test folders (not API-versioned)
 
 Mirror `app/Features/{Feature}/` — **not** `tests/Feature/V1/`. Use `$this->apiUrl('clients')` for `/api/v1/clients`.
@@ -27,23 +29,30 @@ vendor/bin/sail artisan make:test --pest StoreClientTest          # feature
 vendor/bin/sail artisan make:test --pest ClientTest --unit      # unit
 ```
 
+## Tenant test helper (`ActsAsTenant`)
+
+On `Tests\TestCase` via `Tests\Concerns\ActsAsTenant`:
+
+```php
+// User + active freelancer + membership (default: owner)
+['user' => $user, 'freelancer' => $freelancer] = $this->createTenantWorkspace();
+
+// Sanctum + X-Freelancer-Id (creates workspace when called with no args)
+$this->actingAsTenant($user, $freelancer)
+    ->postJson($this->apiUrl('clients'), ['name' => 'Acme'])
+    ->assertCreated();
+
+// Header only (user already authenticated)
+$this->withFreelancerContext($freelancer)->getJson($this->apiUrl('clients'));
+```
+
 ## Feature test template
 
 ```php
 declare(strict_types=1);
 
-use App\Features\Auth\Models\User;
-use App\Features\Tenancy\Models\Freelancer;
-use Laravel\Sanctum\Sanctum;
-
 it('allows owner to create client in workspace', function () {
-    $user = User::factory()->freelancer()->create();
-    $freelancer = Freelancer::factory()->active()->create(['owner_user_id' => $user->id]);
-    // membership factory...
-
-    Sanctum::actingAs($user);
-
-    $this->withHeader('X-Freelancer-Id', (string) $freelancer->id)
+    $this->actingAsTenant()
         ->postJson($this->apiUrl('clients'), ['name' => 'Acme'])
         ->assertCreated();
 });
@@ -51,7 +60,7 @@ it('allows owner to create client in workspace', function () {
 
 ## Isolation test pattern
 
-Two freelancers, two users. User A requests User B's resource ID → `assertNotFound()` or `assertForbidden()`.
+Two freelancers, two users. User A requests User B's resource ID → `assertNotFound()` + `code: not_found`. Same-tenant policy deny → `assertForbidden()`.
 
 ## Run narrow
 

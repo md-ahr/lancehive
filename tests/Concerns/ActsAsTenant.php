@@ -23,7 +23,7 @@ trait ActsAsTenant
         array $freelancerAttributes = [],
         FreelancerMembershipRole $role = FreelancerMembershipRole::Owner,
     ): array {
-        $user = User::factory()->freelancer()->create($userAttributes);
+        $user = User::factory()->user()->create($userAttributes);
         $freelancer = Freelancer::factory()->active()->create([
             'owner_user_id' => $user->id,
             ...$freelancerAttributes,

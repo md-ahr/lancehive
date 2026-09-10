@@ -22,7 +22,7 @@ it('allows user login with valid credentials', function () {
         ])
         ->assertJsonPath('user.id', $user->id)
         ->assertJsonPath('user.email', 'freelancer@example.com')
-        ->assertJsonPath('user.role', UserRole::Freelancer->value);
+        ->assertJsonPath('user.role', UserRole::User->value);
 });
 
 it('fails login with invalid password', function () {

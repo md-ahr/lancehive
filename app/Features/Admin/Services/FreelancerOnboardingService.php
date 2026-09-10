@@ -41,7 +41,7 @@ final class FreelancerOnboardingService
                 'name' => $data['owner_name'],
                 'email' => $data['owner_email'],
                 'password' => Str::password(),
-                'role' => UserRole::Freelancer,
+                'role' => UserRole::User,
             ]);
 
             $freelancer = Freelancer::query()->create([

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Features\Admin\Notifications\FreelancerInviteNotification;
+use App\Features\Auth\Enums\UserRole;
 use App\Features\Auth\Models\User;
 use App\Features\PlatformBilling\Models\Plan;
 use App\Features\PlatformBilling\Models\Subscription;
@@ -41,6 +42,7 @@ it('creates freelancer workspace for super admin', function () {
         ->and(FreelancerMembership::query()->count())->toBe(1);
 
     $owner = User::query()->where('email', 'owner@newstudio.test')->firstOrFail();
+    expect($owner->role)->toBe(UserRole::User);
     Notification::assertSentTo($owner, FreelancerInviteNotification::class);
 });
 

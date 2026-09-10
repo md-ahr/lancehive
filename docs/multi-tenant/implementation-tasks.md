@@ -1387,10 +1387,10 @@ Phase 11 — Isolation tests ✅
 [x] 11.4 ClientInvoice isolation tests
 [x] 11.5 Super-admin tenant override tests
 
-Phase 12 — Role cleanup (optional)
-[ ] 12.1 Add UserRole::User
-[ ] 12.2 Map seed users to memberships
-[ ] 12.3 Deprecate global role helpers
+Phase 12 — Role cleanup (optional) ✅
+[x] 12.1 Add UserRole::User
+[x] 12.2 Map seed users to memberships
+[x] 12.3 Deprecate global role helpers
 
 Phase 13 — Freelancer team
 [ ] 13.1 ClientMembership table stub

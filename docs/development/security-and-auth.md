@@ -57,12 +57,13 @@ Use `Sanctum::actingAs($user)` or `$this->actingAs($user, 'sanctum')`. Never byp
 | Value | Who | API access |
 |-------|-----|------------|
 | `super_admin` | Platform operator | `/admin/*`, `GET /users`, tenant override on admin routes |
-| `freelancer` | Workspace user (legacy column; migrating to membership) | Tenant routes when member |
-| `client` | Client portal user (Phase 14) | `/portal/*` only |
+| `user` | Everyone else | Tenant routes when `freelancer_memberships` exist; `/portal/*` when `client_memberships` exist (Phase 14) |
+| `freelancer` | **Deprecated** — migrated to `user` | — |
+| `client` | **Deprecated** — migrated to `user` | — |
 
 Gate: `can:super-admin` → `User::isSuperAdmin()`.
 
-**Target state (Task 12.3):** everyone except super-admin has `users.role = user`; workspace permissions come from pivot tables only. Until migration completes, both `UserRole` and membership roles may apply — prefer membership for tenant authorization.
+**Current state (Phase 12):** everyone except super-admin has `users.role = user`; workspace and portal permissions come from pivot tables. `User::isFreelancer()` / `isClient()` check memberships, not the `users.role` column.
 
 ### Workspace role — `freelancer_memberships.role` (`FreelancerMembershipRole`)
 

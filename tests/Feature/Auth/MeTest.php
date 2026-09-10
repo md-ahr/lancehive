@@ -28,7 +28,7 @@ it('allows authenticated freelancer to access me endpoint', function () {
         ->assertOk()
         ->assertJsonPath('user.id', $freelancer->id)
         ->assertJsonPath('user.email', 'freelancer@example.com')
-        ->assertJsonPath('user.role', UserRole::Freelancer->value)
+        ->assertJsonPath('user.role', UserRole::User->value)
         ->assertJsonPath('memberships', [])
         ->assertJsonPath('active_freelancer', null)
         ->assertJsonPath('subscription', null);
@@ -45,7 +45,7 @@ it('allows authenticated client to access me endpoint', function () {
         ->assertOk()
         ->assertJsonPath('user.id', $client->id)
         ->assertJsonPath('user.email', 'client@example.com')
-        ->assertJsonPath('user.role', UserRole::Client->value)
+        ->assertJsonPath('user.role', UserRole::User->value)
         ->assertJsonPath('memberships', []);
 });
 
@@ -64,7 +64,7 @@ it('allows me endpoint access with bearer token from login', function () {
         ->getJson($this->apiUrl('me'))
         ->assertOk()
         ->assertJsonPath('user.email', 'client@example.com')
-        ->assertJsonPath('user.role', UserRole::Client->value);
+        ->assertJsonPath('user.role', UserRole::User->value);
 });
 
 it('returns memberships active workspace and subscription summary', function () {

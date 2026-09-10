@@ -50,14 +50,33 @@ class User extends Authenticatable
         return $this->role?->isSuperAdmin() ?? false;
     }
 
-    public function isFreelancer(): bool
+    public function isUser(): bool
     {
-        return $this->role?->isFreelancer() ?? false;
+        return $this->role?->isUser() ?? false;
     }
 
+    /**
+     * Whether the user belongs to at least one freelancer workspace.
+     */
+    public function isFreelancer(): bool
+    {
+        if ($this->relationLoaded('freelancerMemberships')) {
+            return $this->freelancerMemberships->isNotEmpty();
+        }
+
+        return $this->freelancerMemberships()->exists();
+    }
+
+    /**
+     * Whether the user belongs to at least one client portal organization.
+     */
     public function isClient(): bool
     {
-        return $this->role?->isClient() ?? false;
+        if ($this->relationLoaded('clientMemberships')) {
+            return $this->clientMemberships->isNotEmpty();
+        }
+
+        return $this->clientMemberships()->exists();
     }
 
     public function ownedFreelancer(): HasOne

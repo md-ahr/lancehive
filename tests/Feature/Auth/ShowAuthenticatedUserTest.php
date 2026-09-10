@@ -47,11 +47,11 @@ it('allows super admin to list all users', function () {
         ])
         ->assertJsonFragment([
             'id' => $freelancer->id,
-            'role' => UserRole::Freelancer->value,
+            'role' => UserRole::User->value,
         ])
         ->assertJsonFragment([
             'id' => $client->id,
-            'role' => UserRole::Client->value,
+            'role' => UserRole::User->value,
         ]);
 });
 

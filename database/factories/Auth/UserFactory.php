@@ -30,7 +30,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
-            'role' => UserRole::Client,
+            'role' => UserRole::User,
         ];
     }
 
@@ -46,13 +46,24 @@ class UserFactory extends Factory
         return $this->state(fn () => ['role' => UserRole::SuperAdmin]);
     }
 
-    public function freelancer(): static
+    public function user(): static
     {
-        return $this->state(fn () => ['role' => UserRole::Freelancer]);
+        return $this->state(fn () => ['role' => UserRole::User]);
     }
 
+    /**
+     * @deprecated Use user() — workspace access is determined by freelancer_memberships.
+     */
+    public function freelancer(): static
+    {
+        return $this->user();
+    }
+
+    /**
+     * @deprecated Use user() — portal access is determined by client_memberships.
+     */
     public function client(): static
     {
-        return $this->state(fn () => ['role' => UserRole::Client]);
+        return $this->user();
     }
 }

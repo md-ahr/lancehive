@@ -187,7 +187,7 @@ it('allows workspace owner to login and access profile', function () {
         'password' => 'password',
     ])
         ->assertOk()
-        ->assertJsonPath('user.role', UserRole::Freelancer->value)
+        ->assertJsonPath('user.role', UserRole::User->value)
         ->json('token');
 
     $this->withToken($token)
@@ -228,7 +228,7 @@ it('allows client portal users to login', function () {
             'password' => 'password',
         ])
             ->assertOk()
-            ->assertJsonPath('user.role', UserRole::Client->value)
+            ->assertJsonPath('user.role', UserRole::User->value)
             ->json('token');
 
         resetAuthState();

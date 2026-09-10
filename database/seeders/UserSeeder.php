@@ -17,22 +17,22 @@ class UserSeeder extends Seeder
             'email' => DemoData::SUPER_ADMIN_EMAIL,
         ]);
 
-        User::factory()->freelancer()->create([
+        User::factory()->user()->create([
             'name' => 'Demo Owner',
             'email' => DemoData::OWNER_EMAIL,
         ]);
 
-        User::factory()->freelancer()->create([
+        User::factory()->user()->create([
             'name' => 'Demo Member',
             'email' => DemoData::MEMBER_EMAIL,
         ]);
 
-        User::factory()->client()->create([
+        User::factory()->user()->create([
             'name' => 'Acme Primary Contact',
             'email' => DemoData::CLIENT_PRIMARY_EMAIL,
         ]);
 
-        User::factory()->client()->create([
+        User::factory()->user()->create([
             'name' => 'Acme Viewer',
             'email' => DemoData::CLIENT_VIEWER_EMAIL,
         ]);

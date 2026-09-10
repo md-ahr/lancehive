@@ -1,6 +1,7 @@
 <?php
 
 use App\Features\Delivery\Http\Controllers\ClientController;
+use App\Features\Delivery\Http\Controllers\ProjectController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'freelancer.context'])
@@ -19,4 +20,22 @@ Route::middleware(['auth:sanctum', 'freelancer.context'])
 
         Route::delete('/clients/{client}', [ClientController::class, 'destroy'])
             ->name('clients.destroy');
+
+        Route::get('/clients/{client}/projects', [ProjectController::class, 'indexForClient'])
+            ->name('clients.projects.index');
+
+        Route::post('/clients/{client}/projects', [ProjectController::class, 'store'])
+            ->name('clients.projects.store');
+
+        Route::get('/projects', [ProjectController::class, 'index'])
+            ->name('projects.index');
+
+        Route::get('/projects/{project}', [ProjectController::class, 'show'])
+            ->name('projects.show');
+
+        Route::patch('/projects/{project}', [ProjectController::class, 'update'])
+            ->name('projects.update');
+
+        Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])
+            ->name('projects.destroy');
     });

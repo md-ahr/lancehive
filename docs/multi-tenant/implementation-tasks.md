@@ -1262,7 +1262,7 @@ Respect **build order** within each PR — e.g. PR 5 must merge invoice items (1
 
 ## Task checklist
 
-Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 4 client management complete).
+Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 5 project management complete).
 
 ```
 Phase 0
@@ -1335,14 +1335,14 @@ Phase 4 — Clients ✅
 [x] 4.6  Update client (PATCH /clients/{id})
 [x] 4.7  Archive client (DELETE /clients/{id})
 
-Phase 5 — Projects
-[ ] 5.1  Project API resource
-[ ] 5.2  Create project (POST /clients/{client}/projects)
-[ ] 5.3  List client projects (GET /clients/{client}/projects)
-[ ] 5.4  List all tenant projects (GET /projects)
-[ ] 5.5  Show project (GET /projects/{id})
-[ ] 5.6  Update project (PATCH /projects/{id})
-[ ] 5.7  Soft-delete project (DELETE /projects/{id})
+Phase 5 — Projects ✅
+[x] 5.1  Project API resource
+[x] 5.2  Create project (POST /clients/{client}/projects)
+[x] 5.3  List client projects (GET /clients/{client}/projects)
+[x] 5.4  List all tenant projects (GET /projects)
+[x] 5.5  Show project (GET /projects/{id})
+[x] 5.6  Update project (PATCH /projects/{id})
+[x] 5.7  Soft-delete project (DELETE /projects/{id})
 
 Phase 6 — Tasks
 [ ] 6.1  Task API resource

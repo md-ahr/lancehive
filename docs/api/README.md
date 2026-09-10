@@ -35,7 +35,7 @@ Human-readable API contract for the LanceHive MVP (`/api/v1`). This is the **des
 | Admin — Freelancers | [endpoints/admin-freelancers.md](./endpoints/admin-freelancers.md) | `/admin/freelancers/*` | Implemented |
 | Admin — Plans | [endpoints/admin-plans.md](./endpoints/admin-plans.md) | `/admin/plans/*` | Planned (Phase 15) |
 | Clients | [endpoints/clients.md](./endpoints/clients.md) | `/clients/*` | Implemented |
-| Projects | [endpoints/projects.md](./endpoints/projects.md) | `/projects/*`, nested under clients | Planned (Phase 5) |
+| Projects | [endpoints/projects.md](./endpoints/projects.md) | `/projects/*`, nested under clients | Implemented (time-summary in Phase 7.6) |
 | Tasks | [endpoints/tasks.md](./endpoints/tasks.md) | `/tasks/*`, nested under projects | Planned (Phase 6) |
 | Time logs | [endpoints/time-logs.md](./endpoints/time-logs.md) | `/time-logs/*`, nested under tasks | Planned (Phase 7) |
 | Client invoices | [endpoints/client-invoices.md](./endpoints/client-invoices.md) | `/client-invoices/*` | Planned (Phase 8) |

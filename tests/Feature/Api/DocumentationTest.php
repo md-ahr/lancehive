@@ -46,3 +46,13 @@ it('documents client routes in openapi spec', function () {
         '/clients/{client}',
     ]);
 });
+
+it('documents project routes in openapi spec', function () {
+    $paths = $this->getJson('/docs/api.json')->json('paths');
+
+    expect($paths)->toHaveKeys([
+        '/projects',
+        '/projects/{project}',
+        '/clients/{client}/projects',
+    ]);
+});

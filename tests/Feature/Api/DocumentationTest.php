@@ -27,3 +27,13 @@ it('documents authentication routes in openapi spec', function () {
 
     expect($spec['paths'])->toHaveKeys(['/login', '/me', '/users']);
 });
+
+it('documents admin freelancer routes in openapi spec', function () {
+    $paths = $this->getJson('/docs/api.json')->json('paths');
+
+    expect($paths)->toHaveKeys([
+        '/admin/freelancers',
+        '/admin/freelancers/{freelancer}',
+        '/admin/freelancers/{freelancer}/resend-invite',
+    ]);
+});

@@ -32,7 +32,7 @@ Human-readable API contract for the LanceHive MVP (`/api/v1`). This is the **des
 | Authentication | [endpoints/auth.md](./endpoints/auth.md) | login, logout, forgot/reset password | Implemented |
 | Users | [endpoints/users.md](./endpoints/users.md) | `GET /users` | Implemented |
 | Me | [endpoints/me.md](./endpoints/me.md) | `GET /me` | Partial (enhancement in Phase 9) |
-| Admin — Freelancers | [endpoints/admin-freelancers.md](./endpoints/admin-freelancers.md) | `/admin/freelancers/*` | Planned (Phase 3) |
+| Admin — Freelancers | [endpoints/admin-freelancers.md](./endpoints/admin-freelancers.md) | `/admin/freelancers/*` | Implemented |
 | Admin — Plans | [endpoints/admin-plans.md](./endpoints/admin-plans.md) | `/admin/plans/*` | Planned (Phase 15) |
 | Clients | [endpoints/clients.md](./endpoints/clients.md) | `/clients/*` | Planned (Phase 4) |
 | Projects | [endpoints/projects.md](./endpoints/projects.md) | `/projects/*`, nested under clients | Planned (Phase 5) |

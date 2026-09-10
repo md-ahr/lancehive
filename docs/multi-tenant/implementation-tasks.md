@@ -1262,7 +1262,7 @@ Respect **build order** within each PR — e.g. PR 5 must merge invoice items (1
 
 ## Task checklist
 
-Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 2 tenant isolation layer complete).
+Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 3 super-admin onboarding complete).
 
 ```
 Phase 0
@@ -1314,17 +1314,17 @@ Phase 2 — Tenant isolation ✅
 [x] 2.13 Redis cache configuration
 [x] 2.14 Cache services (plans, subscription, memberships)
 
-Phase 3 — Super-admin onboarding
-[ ] 3.1  Freelancer API resource
-[ ] 3.2  Admin route group
-[ ] 3.3  List freelancers (GET /admin/freelancers)
-[ ] 3.4  Show freelancer (GET /admin/freelancers/{id})
-[ ] 3.5  FreelancerOnboardingService
-[ ] 3.6  Create freelancer (POST /admin/freelancers)
-[ ] 3.7  Update freelancer status (PATCH /admin/freelancers/{id})
-[ ] 3.8  Freelancer invite notification
-[ ] 3.9  Resend invite (POST /admin/freelancers/{id}/resend-invite)
-[ ] 3.10 Admin activity log
+Phase 3 — Super-admin onboarding ✅
+[x] 3.1  Freelancer API resource
+[x] 3.2  Admin route group
+[x] 3.3  List freelancers (GET /admin/freelancers)
+[x] 3.4  Show freelancer (GET /admin/freelancers/{id})
+[x] 3.5  FreelancerOnboardingService
+[x] 3.6  Create freelancer (POST /admin/freelancers)
+[x] 3.7  Update freelancer status (PATCH /admin/freelancers/{id})
+[x] 3.8  Freelancer invite notification
+[x] 3.9  Resend invite (POST /admin/freelancers/{id}/resend-invite)
+[x] 3.10 Admin activity log
 
 Phase 4 — Clients
 [ ] 4.1  Client API resource

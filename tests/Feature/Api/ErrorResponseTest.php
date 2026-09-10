@@ -47,5 +47,6 @@ it('returns super admin required when non admin accesses users list', function (
 
     $this->actingAs($user, 'sanctum')
         ->getJson($this->apiUrl('users'))
-        ->assertForbidden();
+        ->assertForbidden()
+        ->assertJsonPath('code', 'super_admin_required');
 });

@@ -2,6 +2,7 @@
 
 use App\Features\Auth\Http\Controllers\AuthController;
 use App\Features\Auth\Http\Controllers\UserController;
+use App\Features\Tenancy\Http\Controllers\MeController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login'])
@@ -19,7 +20,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::get('/me', [AuthController::class, 'me'])->name('my_profile');
+    Route::get('/me', [MeController::class, 'show'])->name('my_profile');
 
     Route::get('/users', [UserController::class, 'index'])
         ->middleware('can:super-admin')

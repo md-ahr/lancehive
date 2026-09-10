@@ -53,5 +53,5 @@ Returned by enhanced `GET /me` (Phase 9).
 |-------|------|-------------|
 | `status` | string | `trialing`, `active`, `past_due`, `read_only`, `canceled` |
 | `plan_name` | string | Current plan name |
-| `read_only` | boolean | Whether writes are blocked |
+| `read_only` | boolean | `true` when the workspace subscription blocks writes |
 | `trial_ends_at` | string \| null | ISO 8601 datetime |

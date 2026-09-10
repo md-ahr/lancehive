@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 use App\Features\Auth\Enums\UserRole;
 use App\Features\Auth\Models\User;
+use App\Features\PlatformBilling\Models\Plan;
+use App\Features\PlatformBilling\Models\Subscription;
+use App\Features\Tenancy\Cache\MembershipCache;
+use App\Features\Tenancy\Models\Freelancer;
+use App\Features\Tenancy\Models\FreelancerMembership;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\Sanctum;
 
 it('denies unauthenticated access to me endpoint', function () {
@@ -22,7 +28,10 @@ it('allows authenticated freelancer to access me endpoint', function () {
         ->assertOk()
         ->assertJsonPath('user.id', $freelancer->id)
         ->assertJsonPath('user.email', 'freelancer@example.com')
-        ->assertJsonPath('user.role', UserRole::Freelancer->value);
+        ->assertJsonPath('user.role', UserRole::Freelancer->value)
+        ->assertJsonPath('memberships', [])
+        ->assertJsonPath('active_freelancer', null)
+        ->assertJsonPath('subscription', null);
 });
 
 it('allows authenticated client to access me endpoint', function () {
@@ -36,7 +45,8 @@ it('allows authenticated client to access me endpoint', function () {
         ->assertOk()
         ->assertJsonPath('user.id', $client->id)
         ->assertJsonPath('user.email', 'client@example.com')
-        ->assertJsonPath('user.role', UserRole::Client->value);
+        ->assertJsonPath('user.role', UserRole::Client->value)
+        ->assertJsonPath('memberships', []);
 });
 
 it('allows me endpoint access with bearer token from login', function () {
@@ -55,4 +65,56 @@ it('allows me endpoint access with bearer token from login', function () {
         ->assertOk()
         ->assertJsonPath('user.email', 'client@example.com')
         ->assertJsonPath('user.role', UserRole::Client->value);
+});
+
+it('returns memberships active workspace and subscription summary', function () {
+    Cache::flush();
+
+    $workspace = $this->createTenantWorkspace();
+    $plan = Plan::factory()->create(['name' => 'Starter']);
+    Subscription::factory()->for($workspace['freelancer'])->for($plan)->create();
+
+    Sanctum::actingAs($workspace['user']);
+
+    $this->getJson($this->apiUrl('me'))
+        ->assertOk()
+        ->assertJsonStructure([
+            'user' => ['id', 'name', 'email', 'role'],
+            'memberships' => [
+                '*' => [
+                    'id',
+                    'freelancer_id',
+                    'user_id',
+                    'role',
+                    'freelancer' => ['id', 'name', 'slug', 'status'],
+                ],
+            ],
+            'active_freelancer' => ['id', 'name', 'slug', 'status'],
+            'subscription' => ['status', 'plan_name', 'read_only', 'trial_ends_at'],
+        ])
+        ->assertJsonPath('memberships.0.freelancer_id', $workspace['freelancer']->id)
+        ->assertJsonPath('active_freelancer.id', $workspace['freelancer']->id)
+        ->assertJsonPath('subscription.plan_name', 'Starter')
+        ->assertJsonPath('subscription.status', 'trialing');
+
+    expect(Cache::has('memberships:user:'.$workspace['user']->id))->toBeTrue();
+
+    app(MembershipCache::class)->forget($workspace['user']->id);
+});
+
+it('returns null active workspace when user belongs to multiple workspaces without header', function () {
+    $user = User::factory()->freelancer()->create();
+    $first = Freelancer::factory()->active()->create(['owner_user_id' => $user->id]);
+    $second = Freelancer::factory()->active()->create();
+
+    FreelancerMembership::factory()->for($first)->for($user)->owner()->create();
+    FreelancerMembership::factory()->for($second)->for($user)->member()->create();
+
+    Sanctum::actingAs($user);
+
+    $this->getJson($this->apiUrl('me'))
+        ->assertOk()
+        ->assertJsonCount(2, 'memberships')
+        ->assertJsonPath('active_freelancer', null)
+        ->assertJsonPath('subscription', null);
 });

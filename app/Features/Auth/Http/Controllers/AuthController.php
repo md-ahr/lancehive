@@ -8,7 +8,6 @@ use App\Features\Auth\Http\Requests\ForgotPasswordRequest;
 use App\Features\Auth\Http\Requests\LoginRequest;
 use App\Features\Auth\Http\Requests\ResetPasswordRequest;
 use App\Features\Auth\Http\Resources\LoginResource;
-use App\Features\Auth\Http\Resources\MeResource;
 use App\Features\Auth\Http\Resources\MessageResource;
 use App\Features\Auth\Models\User;
 use App\Http\Controllers\Controller;
@@ -48,11 +47,6 @@ final class AuthController extends Controller
         return new MessageResource([
             'message' => 'Logged out successfully.',
         ]);
-    }
-
-    public function me(Request $request): MeResource
-    {
-        return new MeResource($request->user());
     }
 
     public function forgotPassword(ForgotPasswordRequest $request): MessageResource

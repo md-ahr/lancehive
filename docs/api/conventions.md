@@ -31,6 +31,16 @@ X-Freelancer-Id: {freelancer_id}
 
 Resolved by `EnsureFreelancerContext` middleware. Super-admins may use `?freelancer_id=` query override on admin routes (logged to `admin_activity_logs`).
 
+### Workspace switching
+
+| Context | Header required? | Behavior |
+|---------|------------------|----------|
+| `GET /me` | Optional | When sent, selects `active_freelancer` and `subscription` in the response. Invalid membership → `403 forbidden`. When omitted and the user has exactly one membership, that workspace is auto-selected. |
+| Tenant routes (`/clients`, `/projects`, …) | Required when user has multiple memberships | Sets `TenantContext` for the request. Same membership rules as above. |
+| Single membership | No | Workspace auto-selected on tenant routes and on `GET /me`. |
+
+Send the same `X-Freelancer-Id` value on every tenant-scoped request after switching workspaces in the client UI.
+
 ## Route groups
 
 | Group | Middleware | Writes when subscription lapsed |

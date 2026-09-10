@@ -12,27 +12,11 @@ Scramble group: **Authentication** (weight: 0). Current user profile and workspa
 | Headers | `X-Freelancer-Id` (optional — selects active workspace) |
 | Middleware | `auth:sanctum` |
 
-**Current behavior (implemented):** returns `{ user: UserResource }`.
+Returns [MeResource](../schemas/membership.md#meresource) with the authenticated user, freelancer memberships, active workspace, and subscription summary.
 
-**Target behavior (Phase 9.2):** returns [MeResource](../schemas/membership.md#meresource).
+When `X-Freelancer-Id` is omitted and the user belongs to exactly one workspace, that workspace is used for `active_freelancer` and `subscription`. When the user belongs to multiple workspaces and no header is sent, those fields are `null`.
 
-**Response `200` (current)**
-
-```json
-{
-  "user": {
-    "id": 1,
-    "name": "Jane Owner",
-    "email": "jane@example.com",
-    "role": "freelancer",
-    "email_verified_at": null,
-    "created_at": "2026-01-15T10:00:00+00:00",
-    "updated_at": "2026-01-15T10:00:00+00:00"
-  }
-}
-```
-
-**Response `200` (Phase 9.2 target)**
+**Response `200`**
 
 ```json
 {
@@ -53,3 +37,4 @@ Scramble group: **Authentication** (weight: 0). Current user profile and workspa
 | HTTP | code | When |
 |------|------|------|
 | 401 | unauthenticated | Missing/invalid token |
+| 403 | forbidden | `X-Freelancer-Id` points to a workspace the user does not belong to |

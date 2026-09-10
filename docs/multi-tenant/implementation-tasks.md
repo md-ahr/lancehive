@@ -901,7 +901,7 @@ Build **after** Task 1.21 — `client_invoice_item_id` FK targets `client_invoic
 
 ---
 
-## Phase 9 — Auth and /me enhancements
+## Phase 9 — Auth and /me enhancements ✅
 
 **Phase depends on:** 2.4, 2.14, 1.6, 1.26.
 
@@ -1262,7 +1262,7 @@ Respect **build order** within each PR — e.g. PR 5 must merge invoice items (1
 
 ## Task checklist
 
-Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 8 client invoicing complete).
+Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 9 auth /me enhancements complete).
 
 ```
 Phase 0
@@ -1371,10 +1371,10 @@ Phase 8 — Client invoicing ✅
 [x] 8.8  Soft-delete client invoice (DELETE /client-invoices/{id})
 [x] 8.9  Mark overdue job
 
-Phase 9 — Auth /me
-[ ] 9.1  FreelancerMembershipResource
-[ ] 9.2  Enhance GET /me
-[ ] 9.3  Workspace switch via header
+Phase 9 — Auth /me ✅
+[x] 9.1  FreelancerMembershipResource
+[x] 9.2  Enhance GET /me
+[x] 9.3  Workspace switch via header
 
 Phase 10 — Seed data
 [x] 10.1 Update seeders

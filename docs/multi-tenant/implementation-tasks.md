@@ -1262,7 +1262,7 @@ Respect **build order** within each PR — e.g. PR 5 must merge invoice items (1
 
 ## Task checklist
 
-Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 3 super-admin onboarding complete).
+Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 4 client management complete).
 
 ```
 Phase 0
@@ -1326,14 +1326,14 @@ Phase 3 — Super-admin onboarding ✅
 [x] 3.9  Resend invite (POST /admin/freelancers/{id}/resend-invite)
 [x] 3.10 Admin activity log
 
-Phase 4 — Clients
-[ ] 4.1  Client API resource
-[ ] 4.2  Tenant-scoped route group
-[ ] 4.3  Create client (POST /clients)
-[ ] 4.4  List clients (GET /clients)
-[ ] 4.5  Show client (GET /clients/{id})
-[ ] 4.6  Update client (PATCH /clients/{id})
-[ ] 4.7  Archive client (DELETE /clients/{id})
+Phase 4 — Clients ✅
+[x] 4.1  Client API resource
+[x] 4.2  Tenant-scoped route group
+[x] 4.3  Create client (POST /clients)
+[x] 4.4  List clients (GET /clients)
+[x] 4.5  Show client (GET /clients/{id})
+[x] 4.6  Update client (PATCH /clients/{id})
+[x] 4.7  Archive client (DELETE /clients/{id})
 
 Phase 5 — Projects
 [ ] 5.1  Project API resource

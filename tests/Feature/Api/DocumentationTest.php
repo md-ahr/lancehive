@@ -37,3 +37,12 @@ it('documents admin freelancer routes in openapi spec', function () {
         '/admin/freelancers/{freelancer}/resend-invite',
     ]);
 });
+
+it('documents client routes in openapi spec', function () {
+    $paths = $this->getJson('/docs/api.json')->json('paths');
+
+    expect($paths)->toHaveKeys([
+        '/clients',
+        '/clients/{client}',
+    ]);
+});

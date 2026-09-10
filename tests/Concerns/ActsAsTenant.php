@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Concerns;
 
+use App\Core\Tenancy\TenantContext;
 use App\Features\Auth\Models\User;
 use App\Features\Tenancy\Enums\FreelancerMembershipRole;
 use App\Features\Tenancy\Models\Freelancer;
@@ -55,6 +56,8 @@ trait ActsAsTenant
 
     protected function withFreelancerContext(Freelancer $freelancer): static
     {
+        app(TenantContext::class)->setFreelancerId($freelancer->id);
+
         return $this->withHeader('X-Freelancer-Id', (string) $freelancer->id);
     }
 }

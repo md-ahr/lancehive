@@ -23,8 +23,8 @@ class ProjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'client_id' => Client::factory(),
             'freelancer_id' => Freelancer::factory(),
+            'client_id' => Client::factory(),
             'name' => fake()->catchPhrase(),
             'hourly_rate' => fake()->randomFloat(2, 500, 5000),
             'currency' => 'BDT',
@@ -41,5 +41,16 @@ class ProjectFactory extends Factory
     public function completed(): static
     {
         return $this->state(fn () => ['status' => ProjectStatus::Completed]);
+    }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Project $project): void {
+            $client = Client::withoutGlobalScopes()->find($project->client_id);
+
+            if ($client !== null && $client->freelancer_id !== $project->freelancer_id) {
+                $client->forceFill(['freelancer_id' => $project->freelancer_id])->saveQuietly();
+            }
+        });
     }
 }

@@ -24,7 +24,7 @@ final class ClientInvoiceService
             $year = now()->format('Y');
             $prefix = "INV-{$year}-";
 
-            $lastNumber = ClientInvoice::query()
+            $lastNumber = ClientInvoice::withoutGlobalScopes()
                 ->where('freelancer_id', $freelancerId)
                 ->where('invoice_number', 'like', $prefix.'%')
                 ->lockForUpdate()

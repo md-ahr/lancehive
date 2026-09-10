@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Features\ClientBilling\Models;
 
+use App\Core\Tenancy\Concerns\BelongsToTenantViaProject;
 use App\Features\ClientBilling\Services\ClientInvoiceService;
 use App\Features\Delivery\Models\TimeLog;
 use Database\Factories\ClientBilling\ClientInvoiceItemFactory;
@@ -17,7 +18,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 final class ClientInvoiceItem extends Model
 {
     /** @use HasFactory<ClientInvoiceItemFactory> */
-    use HasFactory;
+    use BelongsToTenantViaProject, HasFactory;
+
+    protected static function tenantScopeRelation(): string
+    {
+        return 'clientInvoice';
+    }
 
     /**
      * @return array<string, string>

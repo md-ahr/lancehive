@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Features\Delivery\Models;
 
+use App\Core\Tenancy\Concerns\BelongsToFreelancer;
 use App\Features\ClientPortal\Models\ClientMembership;
 use App\Features\Delivery\Enums\ClientStatus;
 use App\Features\Tenancy\Models\Freelancer;
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 final class Client extends Model
 {
     /** @use HasFactory<ClientFactory> */
-    use HasFactory;
+    use BelongsToFreelancer, HasFactory;
 
     /**
      * @return array<string, string>

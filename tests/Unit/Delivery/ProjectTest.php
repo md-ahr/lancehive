@@ -13,6 +13,7 @@ it('requires hourly_rate when creating a project', function () {
 
 it('relates to client freelancer tasks and invoices', function () {
     $project = Project::factory()->create();
+    test()->setTenantContext($project->freelancer_id);
 
     expect($project->client)->not->toBeNull()
         ->and($project->freelancer)->not->toBeNull()

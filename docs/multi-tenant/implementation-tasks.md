@@ -1262,7 +1262,7 @@ Respect **build order** within each PR — e.g. PR 5 must merge invoice items (1
 
 ## Task checklist
 
-Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 0–1 complete with unit tests; Phase 2 next).
+Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 2 tenant isolation layer complete).
 
 ```
 Phase 0
@@ -1298,21 +1298,21 @@ Phase 1 — Database ✅
 [x] 1.27 SubscriptionCharge model
 [x] 1.28 Performance indexes migration
 
-Phase 2 — Tenant isolation
-[ ] 2.1  TenantContext service
-[ ] 2.2  BelongsToFreelancer trait
-[ ] 2.3  BelongsToTenantViaProject trait
-[ ] 2.4  EnsureFreelancerContext middleware
-[ ] 2.5  FreelancerPolicy
-[ ] 2.6  ClientPolicy
-[ ] 2.7  ProjectPolicy
-[ ] 2.8  TaskPolicy
-[ ] 2.9  TimeLogPolicy
-[ ] 2.10 ClientInvoicePolicy
-[ ] 2.11 Service layer boundaries
-[ ] 2.12 Tenant API conventions (cursor pagination)
-[ ] 2.13 Redis cache configuration
-[ ] 2.14 Cache services (plans, subscription, memberships)
+Phase 2 — Tenant isolation ✅
+[x] 2.1  TenantContext service
+[x] 2.2  BelongsToFreelancer trait
+[x] 2.3  BelongsToTenantViaProject trait
+[x] 2.4  EnsureFreelancerContext middleware
+[x] 2.5  FreelancerPolicy
+[x] 2.6  ClientPolicy
+[x] 2.7  ProjectPolicy
+[x] 2.8  TaskPolicy
+[x] 2.9  TimeLogPolicy
+[x] 2.10 ClientInvoicePolicy
+[x] 2.11 Service layer boundaries
+[x] 2.12 Tenant API conventions (cursor pagination)
+[x] 2.13 Redis cache configuration
+[x] 2.14 Cache services (plans, subscription, memberships)
 
 Phase 3 — Super-admin onboarding
 [ ] 3.1  Freelancer API resource

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Features\ClientBilling\Models;
 
+use App\Core\Tenancy\Concerns\BelongsToFreelancer;
 use App\Features\ClientBilling\Enums\ClientInvoiceStatus;
 use App\Features\ClientBilling\Services\ClientInvoiceService;
 use App\Features\Delivery\Models\Project;
@@ -38,7 +39,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 final class ClientInvoice extends Model
 {
     /** @use HasFactory<ClientInvoiceFactory> */
-    use HasFactory, SoftDeletes;
+    use BelongsToFreelancer, HasFactory, SoftDeletes;
 
     /**
      * @return array<string, string>

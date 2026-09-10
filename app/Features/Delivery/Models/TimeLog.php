@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Features\Delivery\Models;
 
+use App\Core\Tenancy\Concerns\BelongsToTenantViaProject;
 use App\Features\Auth\Models\User;
 use App\Features\ClientBilling\Models\ClientInvoiceItem;
+use Closure;
 use Database\Factories\Delivery\TimeLogFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,7 +26,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class TimeLog extends Model
 {
     /** @use HasFactory<TimeLogFactory> */
-    use HasFactory;
+    use BelongsToTenantViaProject, HasFactory;
+
+    protected static function tenantScopeRelation(): string
+    {
+        return 'task';
+    }
+
+    protected static function tenantScopeConstraint(int $freelancerId): Closure
+    {
+        return fn (Builder $query): Builder => $query->whereHas(
+            'project',
+            fn (Builder $projectQuery): Builder => $projectQuery->where('freelancer_id', $freelancerId),
+        );
+    }
 
     /**
      * @return array<string, string>

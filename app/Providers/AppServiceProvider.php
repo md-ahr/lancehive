@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Core\Tenancy\TenantContext;
 use App\Features\Auth\Models\User;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
@@ -20,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped(TenantContext::class);
     }
 
     /**

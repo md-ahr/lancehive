@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Features\Delivery\Models;
 
+use App\Core\Tenancy\Concerns\BelongsToFreelancer;
 use App\Features\ClientBilling\Models\ClientInvoice;
 use App\Features\Delivery\Enums\ProjectStatus;
 use App\Features\Tenancy\Models\Freelancer;
@@ -28,7 +29,7 @@ use InvalidArgumentException;
 final class Project extends Model
 {
     /** @use HasFactory<ProjectFactory> */
-    use HasFactory, SoftDeletes;
+    use BelongsToFreelancer, HasFactory, SoftDeletes;
 
     /**
      * @return array<string, string>

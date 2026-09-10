@@ -6,11 +6,10 @@ use App\Features\ClientBilling\Enums\ClientPaymentMethod;
 use App\Features\ClientBilling\Models\ClientInvoice;
 use App\Features\ClientBilling\Models\ClientInvoiceItem;
 use App\Features\ClientBilling\Models\ClientInvoicePayment;
-use App\Features\ClientBilling\Services\ClientInvoiceService;
 
 it('generates sequential invoice numbers per freelancer', function () {
-    $service = app(ClientInvoiceService::class);
     $invoice = ClientInvoice::factory()->create(['invoice_number' => null]);
+    test()->setTenantContext($invoice->freelancer_id);
 
     $second = ClientInvoice::factory()->create([
         'freelancer_id' => $invoice->freelancer_id,
@@ -29,6 +28,7 @@ it('recalculates subtotal tax and total from items', function () {
         'tax_amount' => 0,
         'total' => 0,
     ]);
+    test()->setTenantContext($invoice->freelancer_id);
 
     ClientInvoiceItem::factory()->create([
         'client_invoice_id' => $invoice->id,
@@ -59,6 +59,7 @@ it('sets paid_at when payments fully cover total', function () {
         'total' => 1000,
         'paid_at' => null,
     ]);
+    test()->setTenantContext($invoice->freelancer_id);
 
     ClientInvoicePayment::factory()->create([
         'client_invoice_id' => $invoice->id,
@@ -88,6 +89,7 @@ it('clears paid_at when payments no longer cover total', function () {
         'tax_amount' => 0,
         'total' => 1000,
     ]);
+    test()->setTenantContext($invoice->freelancer_id);
 
     $payment = ClientInvoicePayment::factory()->create([
         'client_invoice_id' => $invoice->id,

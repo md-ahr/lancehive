@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Features\Delivery\Models;
 
+use App\Core\Tenancy\Concerns\BelongsToTenantViaProject;
 use App\Features\Delivery\Enums\TaskStatus;
 use Database\Factories\Delivery\TaskFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 final class Task extends Model
 {
     /** @use HasFactory<TaskFactory> */
-    use HasFactory, SoftDeletes;
+    use BelongsToTenantViaProject, HasFactory, SoftDeletes;
 
     /**
      * @return array<string, string>

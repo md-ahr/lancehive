@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Features\ClientBilling\Models;
 
+use App\Core\Tenancy\Concerns\BelongsToTenantViaProject;
 use App\Features\ClientBilling\Enums\ClientPaymentMethod;
 use App\Features\ClientBilling\Services\ClientInvoiceService;
 use Database\Factories\ClientBilling\ClientInvoicePaymentFactory;
@@ -16,7 +17,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class ClientInvoicePayment extends Model
 {
     /** @use HasFactory<ClientInvoicePaymentFactory> */
-    use HasFactory;
+    use BelongsToTenantViaProject, HasFactory;
+
+    protected static function tenantScopeRelation(): string
+    {
+        return 'clientInvoice';
+    }
 
     /**
      * @return array<string, string>

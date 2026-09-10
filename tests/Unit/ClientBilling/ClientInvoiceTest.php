@@ -19,6 +19,7 @@ it('allows nullable bill_to_name', function () {
 
 it('relates to freelancer project items and payments', function () {
     $invoice = ClientInvoice::factory()->create();
+    test()->setTenantContext($invoice->freelancer_id);
 
     expect($invoice->freelancer)->not->toBeNull()
         ->and($invoice->project)->not->toBeNull()

@@ -17,4 +17,14 @@ enum FreelancerMembershipRole: string
     {
         return array_column(self::cases(), 'value');
     }
+
+    public function canManageInvoices(): bool
+    {
+        return in_array($this, [self::Owner, self::Admin], true);
+    }
+
+    public function canManageAllTimeLogs(): bool
+    {
+        return in_array($this, [self::Owner, self::Admin], true);
+    }
 }

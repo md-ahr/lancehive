@@ -45,6 +45,7 @@ it('matches seeded platform catalog to architecture plan', function () {
 
 it('matches seeded tenant hierarchy to domain model', function () {
     $freelancer = Freelancer::query()->where('slug', DemoData::WORKSPACE_SLUG)->firstOrFail();
+    $this->setTenantContext($freelancer);
     $owner = User::query()->where('email', DemoData::OWNER_EMAIL)->firstOrFail();
 
     expect($freelancer->status)->toBe(FreelancerStatus::Active);
@@ -67,6 +68,7 @@ it('matches seeded tenant hierarchy to domain model', function () {
 
 it('keeps seeded delivery chain consistent', function () {
     $freelancer = Freelancer::query()->where('slug', DemoData::WORKSPACE_SLUG)->firstOrFail();
+    $this->setTenantContext($freelancer);
 
     Project::query()->each(function (Project $project) use ($freelancer): void {
         expect($project->freelancer_id)->toBe($freelancer->id);
@@ -91,6 +93,7 @@ it('keeps seeded delivery chain consistent', function () {
 
 it('keeps seeded billing layers separate and valid', function () {
     $freelancer = Freelancer::query()->where('slug', DemoData::WORKSPACE_SLUG)->firstOrFail();
+    $this->setTenantContext($freelancer);
 
     $subscription = Subscription::query()->where('freelancer_id', $freelancer->id)->firstOrFail();
     expect($subscription->status)->toBe(SubscriptionStatus::Trialing);
@@ -122,6 +125,9 @@ it('keeps seeded billing layers separate and valid', function () {
 });
 
 it('creates seeded client portal memberships', function () {
+    $freelancer = Freelancer::query()->where('slug', DemoData::WORKSPACE_SLUG)->firstOrFail();
+    $this->setTenantContext($freelancer);
+
     $acme = Client::query()->where('name', DemoData::CLIENT_ACME_NAME)->firstOrFail();
 
     $memberships = ClientMembership::query()

@@ -94,6 +94,37 @@ it('allows super admin writes when workspace is read only', function () {
         ->assertCreated();
 });
 
+it('blocks saved report creation when read only but allows running reports', function () {
+    $workspace = $this->createTenantWorkspace();
+    $plan = Plan::factory()->create();
+    Subscription::factory()->for($workspace['freelancer'])->for($plan)->readOnly()->create();
+
+    $this->actingAsTenant($workspace['user'], $workspace['freelancer'])
+        ->postJson($this->apiUrl('reports/run'), [
+            'report_type' => 'time_logs',
+            'filters' => [],
+        ])
+        ->assertOk();
+
+    $this->actingAsTenant($workspace['user'], $workspace['freelancer'])
+        ->postJson($this->apiUrl('reports'), [
+            'name' => 'Blocked report',
+            'report_type' => 'time_logs',
+            'filters' => [],
+        ])
+        ->assertForbidden()
+        ->assertJsonPath('code', 'workspace_read_only');
+
+    $this->actingAsTenant($workspace['user'], $workspace['freelancer'])
+        ->postJson($this->apiUrl('report-exports'), [
+            'report_type' => 'time_logs',
+            'format' => 'csv',
+            'filters' => [],
+        ])
+        ->assertForbidden()
+        ->assertJsonPath('code', 'workspace_read_only');
+});
+
 it('blocks invoice creation when read only but allows listing', function () {
     $workspace = $this->createTenantWorkspace();
     $plan = Plan::factory()->create();

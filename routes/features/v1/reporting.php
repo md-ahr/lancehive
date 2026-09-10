@@ -21,23 +21,9 @@ Route::middleware(['auth:sanctum', 'freelancer.context'])->group(function (): vo
     Route::get('/reports', [SavedReportController::class, 'index'])
         ->name('reports.index');
 
-    Route::post('/reports', [SavedReportController::class, 'store'])
-        ->name('reports.store');
-
     Route::get('/reports/{savedReport}', [SavedReportController::class, 'show'])
         ->whereNumber('savedReport')
         ->name('reports.show');
-
-    Route::patch('/reports/{savedReport}', [SavedReportController::class, 'update'])
-        ->whereNumber('savedReport')
-        ->name('reports.update');
-
-    Route::delete('/reports/{savedReport}', [SavedReportController::class, 'destroy'])
-        ->whereNumber('savedReport')
-        ->name('reports.destroy');
-
-    Route::post('/report-exports', [ReportExportController::class, 'store'])
-        ->name('report-exports.store');
 
     Route::get('/report-exports', [ReportExportController::class, 'index'])
         ->name('report-exports.index');
@@ -45,6 +31,22 @@ Route::middleware(['auth:sanctum', 'freelancer.context'])->group(function (): vo
     Route::get('/report-exports/{reportExport}', [ReportExportController::class, 'show'])
         ->whereNumber('reportExport')
         ->name('report-exports.show');
+
+    Route::middleware('writable.subscription')->group(function (): void {
+        Route::post('/reports', [SavedReportController::class, 'store'])
+            ->name('reports.store');
+
+        Route::patch('/reports/{savedReport}', [SavedReportController::class, 'update'])
+            ->whereNumber('savedReport')
+            ->name('reports.update');
+
+        Route::delete('/reports/{savedReport}', [SavedReportController::class, 'destroy'])
+            ->whereNumber('savedReport')
+            ->name('reports.destroy');
+
+        Route::post('/report-exports', [ReportExportController::class, 'store'])
+            ->name('report-exports.store');
+    });
 });
 
 Route::get('/report-exports/{export}/download', [ReportExportDownloadController::class, 'download'])

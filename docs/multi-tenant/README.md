@@ -42,6 +42,37 @@ Freelancer → Subscription → Plan   (platform billing — you charge freelanc
                                    → SubscriptionCharge
 ```
 
+## Dev credentials (local only)
+
+After `vendor/bin/sail artisan migrate:fresh --seed`, use these accounts. **All passwords are `password`** — development and seeded data only; never use in production.
+
+| Role | Email | Notes |
+|------|-------|-------|
+| Super admin | `admin@lancehive.com` | Platform admin; `GET /api/v1/users`, admin freelancer routes |
+| Workspace owner | `owner@demo.lancehive.com` | Owner of demo workspace below |
+| Workspace member | `member@demo.lancehive.com` | Member role in demo workspace |
+| Client portal (primary) | `client-primary@demo.lancehive.com` | Acme Corp primary contact |
+| Client portal (viewer) | `client-viewer@demo.lancehive.com` | Acme Corp read-only member |
+
+### Demo workspace
+
+| Field | Value |
+|-------|-------|
+| Slug | `demo-workspace` |
+| Name | Demo Workspace |
+| Plan | Starter (BDT 200/mo — 3 clients, 5 projects) |
+| Subscription | Trialing (14-day trial) |
+
+Resolve the numeric workspace ID after seeding:
+
+```bash
+vendor/bin/sail artisan tinker --execute 'echo App\Features\Tenancy\Models\Freelancer::where("slug", "demo-workspace")->value("id");'
+```
+
+Tenant API requests from a freelancer user require the `X-Freelancer-Id` header set to that ID (or rely on a single membership auto-selected by `/me`).
+
+Seeded sample data: 2 clients (Acme Corp, Globex Ltd), 3 projects with hourly rates, tasks, time logs, and a draft client invoice.
+
 ## How to build
 
 Work through [implementation-tasks.md](./implementation-tasks.md) in order. Each task is intentionally small — one PR or one focused session. Do not skip tenant isolation tests (Phase 11).

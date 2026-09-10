@@ -1262,7 +1262,7 @@ Respect **build order** within each PR — e.g. PR 5 must merge invoice items (1
 
 ## Task checklist
 
-Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 9 auth /me enhancements complete).
+Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phases 10–11 seed data docs and tenant isolation tests complete).
 
 ```
 Phase 0
@@ -1376,16 +1376,16 @@ Phase 9 — Auth /me ✅
 [x] 9.2  Enhance GET /me
 [x] 9.3  Workspace switch via header
 
-Phase 10 — Seed data
+Phase 10 — Seed data ✅
 [x] 10.1 Update seeders
-[ ] 10.2 Dev credentials docs
+[x] 10.2 Dev credentials docs
 
-Phase 11 — Isolation tests
-[ ] 11.1 Client isolation tests
-[ ] 11.2 Project isolation tests
-[ ] 11.3 Task and time log isolation tests
-[ ] 11.4 ClientInvoice isolation tests
-[ ] 11.5 Super-admin tenant override tests
+Phase 11 — Isolation tests ✅
+[x] 11.1 Client isolation tests
+[x] 11.2 Project isolation tests
+[x] 11.3 Task and time log isolation tests
+[x] 11.4 ClientInvoice isolation tests
+[x] 11.5 Super-admin tenant override tests
 
 Phase 12 — Role cleanup (optional)
 [ ] 12.1 Add UserRole::User

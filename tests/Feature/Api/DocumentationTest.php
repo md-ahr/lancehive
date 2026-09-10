@@ -65,3 +65,18 @@ it('documents task routes in openapi spec', function () {
         '/tasks/{task}',
     ]);
 });
+
+it('documents time log routes in openapi spec', function () {
+    $paths = $this->getJson('/docs/api.json')->json('paths');
+
+    expect($paths)->toHaveKeys([
+        '/tasks/{task}/time-logs',
+        '/time-logs/{timeLog}',
+    ]);
+});
+
+it('documents project time summary route in openapi spec', function () {
+    $paths = $this->getJson('/docs/api.json')->json('paths');
+
+    expect($paths)->toHaveKey('/projects/{project}/time-summary');
+});

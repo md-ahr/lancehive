@@ -14,16 +14,20 @@ use App\Features\Delivery\Http\Requests\DestroyProjectRequest;
 use App\Features\Delivery\Http\Requests\IndexClientProjectRequest;
 use App\Features\Delivery\Http\Requests\IndexProjectRequest;
 use App\Features\Delivery\Http\Requests\ShowProjectRequest;
+use App\Features\Delivery\Http\Requests\ShowProjectTimeSummaryRequest;
 use App\Features\Delivery\Http\Requests\StoreProjectRequest;
 use App\Features\Delivery\Http\Requests\UpdateProjectRequest;
 use App\Features\Delivery\Http\Resources\ProjectResource;
+use App\Features\Delivery\Http\Resources\ProjectTimeSummaryResource;
 use App\Features\Delivery\Models\Client;
 use App\Features\Delivery\Models\Project;
+use App\Features\Delivery\Models\TimeLog;
 use App\Features\PlatformBilling\Services\PlanLimitService;
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\HeaderParameter;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 
 #[HeaderParameter('X-Freelancer-Id', description: 'Active freelancer workspace ID', required: true)]
@@ -100,6 +104,25 @@ final class ProjectController extends Controller
     public function show(ShowProjectRequest $request, Project $project): ProjectResource
     {
         return new ProjectResource($project);
+    }
+
+    #[Endpoint(title: 'Project time summary', description: 'Aggregated hours logged for a project via SQL SUM.')]
+    public function timeSummary(ShowProjectTimeSummaryRequest $request, Project $project): ProjectTimeSummaryResource
+    {
+        $aggregates = TimeLog::query()
+            ->whereHas('task', fn (Builder $query): Builder => $query->where('project_id', $project->id))
+            ->toBase()
+            ->selectRaw('COALESCE(SUM(hours), 0) as total_hours')
+            ->selectRaw('COALESCE(SUM(CASE WHEN client_invoice_item_id IS NOT NULL THEN hours ELSE 0 END), 0) as billed_hours')
+            ->selectRaw('COALESCE(SUM(CASE WHEN client_invoice_item_id IS NULL THEN hours ELSE 0 END), 0) as unbilled_hours')
+            ->first();
+
+        return new ProjectTimeSummaryResource([
+            'project_id' => $project->id,
+            'total_hours' => number_format((float) ($aggregates->total_hours ?? 0), 2, '.', ''),
+            'billed_hours' => number_format((float) ($aggregates->billed_hours ?? 0), 2, '.', ''),
+            'unbilled_hours' => number_format((float) ($aggregates->unbilled_hours ?? 0), 2, '.', ''),
+        ]);
     }
 
     public function update(UpdateProjectRequest $request, Project $project): ProjectResource

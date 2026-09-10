@@ -1262,7 +1262,7 @@ Respect **build order** within each PR — e.g. PR 5 must merge invoice items (1
 
 ## Task checklist
 
-Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 6 task management complete).
+Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 7 time logging complete).
 
 ```
 Phase 0
@@ -1344,7 +1344,7 @@ Phase 5 — Projects ✅
 [x] 5.6  Update project (PATCH /projects/{id})
 [x] 5.7  Soft-delete project (DELETE /projects/{id})
 
-Phase 6 — Tasks
+Phase 6 — Tasks ✅
 [x] 6.1  Task API resource
 [x] 6.2  Create task (POST /projects/{project}/tasks)
 [x] 6.3  List project tasks (GET /projects/{project}/tasks)
@@ -1352,13 +1352,13 @@ Phase 6 — Tasks
 [x] 6.5  Update task (PATCH /tasks/{id})
 [x] 6.6  Soft-delete task (DELETE /tasks/{id})
 
-Phase 7 — Time logs
-[ ] 7.1  TimeLog API resource
-[ ] 7.2  Log time (POST /tasks/{task}/time-logs)
-[ ] 7.3  List task time logs (GET /tasks/{task}/time-logs)
-[ ] 7.4  Update time log (PATCH /time-logs/{id})
-[ ] 7.5  Delete time log (DELETE /time-logs/{id})
-[ ] 7.6  Project time summary (GET /projects/{project}/time-summary)
+Phase 7 — Time logs ✅
+[x] 7.1  TimeLog API resource
+[x] 7.2  Log time (POST /tasks/{task}/time-logs)
+[x] 7.3  List task time logs (GET /tasks/{task}/time-logs)
+[x] 7.4  Update time log (PATCH /time-logs/{id})
+[x] 7.5  Delete time log (DELETE /time-logs/{id})
+[x] 7.6  Project time summary (GET /projects/{project}/time-summary)
 
 Phase 8 — Client invoicing
 [ ] 8.1  ClientInvoice & ClientInvoiceItem API resources

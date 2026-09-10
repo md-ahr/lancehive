@@ -3,6 +3,7 @@
 use App\Features\Delivery\Http\Controllers\ClientController;
 use App\Features\Delivery\Http\Controllers\ProjectController;
 use App\Features\Delivery\Http\Controllers\TaskController;
+use App\Features\Delivery\Http\Controllers\TimeLogController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'freelancer.context'])
@@ -34,6 +35,9 @@ Route::middleware(['auth:sanctum', 'freelancer.context'])
         Route::get('/projects/{project}', [ProjectController::class, 'show'])
             ->name('projects.show');
 
+        Route::get('/projects/{project}/time-summary', [ProjectController::class, 'timeSummary'])
+            ->name('projects.time-summary');
+
         Route::patch('/projects/{project}', [ProjectController::class, 'update'])
             ->name('projects.update');
 
@@ -54,4 +58,16 @@ Route::middleware(['auth:sanctum', 'freelancer.context'])
 
         Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])
             ->name('tasks.destroy');
+
+        Route::get('/tasks/{task}/time-logs', [TimeLogController::class, 'indexForTask'])
+            ->name('tasks.time-logs.index');
+
+        Route::post('/tasks/{task}/time-logs', [TimeLogController::class, 'store'])
+            ->name('tasks.time-logs.store');
+
+        Route::patch('/time-logs/{timeLog}', [TimeLogController::class, 'update'])
+            ->name('time-logs.update');
+
+        Route::delete('/time-logs/{timeLog}', [TimeLogController::class, 'destroy'])
+            ->name('time-logs.destroy');
     });

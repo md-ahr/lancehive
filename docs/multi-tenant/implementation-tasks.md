@@ -1262,7 +1262,7 @@ Respect **build order** within each PR — e.g. PR 5 must merge invoice items (1
 
 ## Task checklist
 
-Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 7 time logging complete).
+Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 8 client invoicing complete).
 
 ```
 Phase 0
@@ -1360,16 +1360,16 @@ Phase 7 — Time logs ✅
 [x] 7.5  Delete time log (DELETE /time-logs/{id})
 [x] 7.6  Project time summary (GET /projects/{project}/time-summary)
 
-Phase 8 — Client invoicing
-[ ] 8.1  ClientInvoice & ClientInvoiceItem API resources
-[ ] 8.2  Create client invoice (POST /projects/{project}/client-invoices)
-[ ] 8.3  Add invoice item (POST /client-invoices/{id}/items)
-[ ] 8.4  List project invoices (GET /projects/{project}/client-invoices)
-[ ] 8.5  Show client invoice (GET /client-invoices/{id})
-[ ] 8.6  Update client invoice (PATCH /client-invoices/{id})
-[ ] 8.7  Record client payment (POST /client-invoices/{id}/payments)
-[ ] 8.8  Soft-delete client invoice (DELETE /client-invoices/{id})
-[ ] 8.9  Mark overdue job
+Phase 8 — Client invoicing ✅
+[x] 8.1  ClientInvoice & ClientInvoiceItem API resources
+[x] 8.2  Create client invoice (POST /projects/{project}/client-invoices)
+[x] 8.3  Add invoice item (POST /client-invoices/{id}/items)
+[x] 8.4  List project invoices (GET /projects/{project}/client-invoices)
+[x] 8.5  Show client invoice (GET /client-invoices/{id})
+[x] 8.6  Update client invoice (PATCH /client-invoices/{id})
+[x] 8.7  Record client payment (POST /client-invoices/{id}/payments)
+[x] 8.8  Soft-delete client invoice (DELETE /client-invoices/{id})
+[x] 8.9  Mark overdue job
 
 Phase 9 — Auth /me
 [ ] 9.1  FreelancerMembershipResource

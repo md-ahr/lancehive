@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Features\ClientBilling\Policies;
 
+use App\Core\Tenancy\TenantContext;
 use App\Features\Auth\Models\User;
 use App\Features\ClientBilling\Models\ClientInvoice;
+use App\Features\Delivery\Models\Project;
 use App\Features\Tenancy\Policies\Concerns\AuthorizesTenantMembership;
 
 final class ClientInvoicePolicy
@@ -22,11 +24,21 @@ final class ClientInvoicePolicy
         return $this->isMember($user);
     }
 
-    public function create(User $user): bool
+    public function create(User $user, ?Project $project = null): bool
     {
         $membership = $this->membershipFor($user);
 
-        return $membership?->role->canManageInvoices() ?? false;
+        if (! ($membership?->role->canManageInvoices() ?? false)) {
+            return false;
+        }
+
+        if ($project === null) {
+            return true;
+        }
+
+        $freelancerId = app(TenantContext::class)->freelancerId();
+
+        return $freelancerId !== null && $project->freelancer_id === $freelancerId;
     }
 
     public function update(User $user, ClientInvoice $clientInvoice): bool

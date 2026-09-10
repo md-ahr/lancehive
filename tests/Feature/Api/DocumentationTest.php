@@ -80,3 +80,14 @@ it('documents project time summary route in openapi spec', function () {
 
     expect($paths)->toHaveKey('/projects/{project}/time-summary');
 });
+
+it('documents client invoice routes in openapi spec', function () {
+    $paths = $this->getJson('/docs/api.json')->json('paths');
+
+    expect($paths)->toHaveKeys([
+        '/projects/{project}/client-invoices',
+        '/client-invoices/{clientInvoice}',
+        '/client-invoices/{clientInvoice}/items',
+        '/client-invoices/{clientInvoice}/payments',
+    ]);
+});

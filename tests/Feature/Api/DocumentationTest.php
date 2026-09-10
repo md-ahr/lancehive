@@ -25,7 +25,17 @@ it('documents authentication routes in openapi spec', function () {
 
     expect($spec['servers'][0]['url'] ?? '')->toEndWith('/'.config('api.prefix', 'api/v1'));
 
-    expect($spec['paths'])->toHaveKeys(['/login', '/me', '/users']);
+    expect($spec['paths'])->toHaveKeys(['/login', '/me', '/me/settings', '/users']);
+});
+
+it('documents settings routes in openapi spec', function () {
+    $paths = $this->getJson('/docs/api.json')->json('paths');
+
+    expect($paths)->toHaveKeys([
+        '/me/settings',
+        '/workspace/settings',
+        '/admin/settings',
+    ]);
 });
 
 it('documents admin freelancer routes in openapi spec', function () {

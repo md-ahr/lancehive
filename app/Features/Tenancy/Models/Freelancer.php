@@ -20,7 +20,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Cashier\Billable;
 
-#[Fillable(['name', 'slug', 'status', 'owner_user_id'])]
+#[Fillable([
+    'name',
+    'slug',
+    'status',
+    'owner_user_id',
+    'default_currency',
+    'invoice_number_prefix',
+    'default_tax_rate',
+    'invoice_footer_notes',
+    'business_name',
+    'business_email',
+    'business_address',
+])]
 final class Freelancer extends Model
 {
     /** @use HasFactory<FreelancerFactory> */
@@ -33,6 +45,7 @@ final class Freelancer extends Model
     {
         return [
             'status' => FreelancerStatus::class,
+            'default_tax_rate' => 'decimal:2',
         ];
     }
 

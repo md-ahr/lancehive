@@ -44,6 +44,7 @@ Returned by enhanced `GET /me` (Phase 9).
 | Field | Type | Description |
 |-------|------|-------------|
 | `user` | object | [UserResource](./user.md) |
+| `user_settings` | object | `{ "timezone": "...", "locale": "..." }` — summary only; full preferences on `/me/settings` |
 | `memberships` | array | [FreelancerMembershipResource](#freelancermembershipresource)[] |
 | `active_freelancer` | object \| null | [FreelancerResource](./freelancer.md) from `X-Freelancer-Id` |
 | `subscription` | object \| null | Subscription summary (see below) |

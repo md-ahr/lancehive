@@ -50,6 +50,7 @@ Each task from Phase 2 onward has **Done when**, **Tests**, and **Edge cases** i
 | 10 | 1.1 – 1.28 (minimum); 8.x recommended for invoice/time-log samples |
 | 11 | 4.1 – 8.9 |
 | 15 | 2.14, 3.x (Stripe billing; can run in parallel with 11 after tenant APIs exist) |
+| 18 | 2.4, 3.2, 8.2, 15.13 (settings APIs; integrations need invoice service + subscription notifications) |
 
 **Phase 1 order note:** Task IDs 1.16–1.17 (time logs) are numbered before 1.18–1.22 but must be **built after** 1.21 — `time_logs.client_invoice_item_id` FK targets `client_invoice_items`. Follow the section order below, not numeric ID order alone.
 
@@ -1204,6 +1205,162 @@ Charge freelancers monthly or yearly. See [architecture-overview.md — Subscrip
 
 ---
 
+## Phase 18 — Settings (user, workspace, platform)
+
+Configurable preferences at three scopes with role-based access. See [architecture-overview.md — Settings model](./architecture-overview.md#settings-model-phase-18).
+
+**Phase depends on:** 2.4 (tenant middleware), 3.2 (admin routes), 8.2 (invoice numbering integration), 15.13 (notification preference gates).
+
+**Acceptance pattern (18.x — Settings):** Contract: `docs/api/endpoints/settings.md`, `docs/api/schemas/settings.md`. Scramble group **Settings** (weight: 15). Feature module: `app/Features/Settings/`. Routes split across `auth.php` (`/me/settings`), `tenancy.php` (`/workspace/settings`), `admin.php` (`/admin/settings`). PATCH is partial update. Workspace PATCH requires `writable.subscription`.
+
+**Role matrix:**
+
+| Endpoint | Read | Write |
+|----------|------|-------|
+| `/me/settings` | Self | Self |
+| `/workspace/settings` | Any member | Owner/admin |
+| `/admin/settings` | Super-admin | Super-admin |
+
+### Task 18.1 — User settings migration
+
+- **Est.:** XS
+- **Depends on:** 0.1
+- **Files:** migration adding to `users`: `timezone` (varchar 64, default `UTC`), `locale` (varchar 10, default `en`), `notification_preferences` (jsonb, default all `true`)
+- **Done when:** `migrate:fresh` succeeds; defaults applied on existing users.
+- **Tests:** Migration smoke via model factory.
+- **Edge cases:** Invalid json default uses Laravel `json` cast default array.
+
+### Task 18.2 — Workspace settings migration
+
+- **Est.:** XS
+- **Depends on:** 1.2
+- **Files:** migration adding to `freelancers`: `default_currency` (char 3, default `BDT`), `invoice_number_prefix` (varchar 20, default `INV`), `default_tax_rate` (decimal 5,2 nullable), `invoice_footer_notes` (text nullable), `business_name`, `business_email`, `business_address` (nullable)
+- **Done when:** `migrate:fresh` succeeds; existing freelancers get defaults.
+- **Tests:** Covered by Freelancer model tests in 18.5.
+- **Edge cases:** Prefix max length enforced at validation layer (18.8).
+
+### Task 18.3 — Platform settings table and seeder
+
+- **Est.:** S
+- **Depends on:** 1.23
+- **Files:** `platform_settings` migration (singleton `id = 1`), `PlatformSettings` model, `PlatformSettingsSeeder` — `default_trial_days` 14, `default_plan_slug` `starter`, `support_email` from config, `maintenance_mode` false
+- **Done when:** Seeder creates row id 1; re-run idempotent.
+- **Tests:** Unit — seeder creates expected defaults.
+- **Edge cases:** `default_plan_slug` must match seeded plan.
+
+### Task 18.4 — PlatformSettingsService and cache
+
+- **Est.:** S
+- **Depends on:** 18.3, 2.13
+- **Files:** `app/Features/Settings/Services/PlatformSettingsService.php`, `app/Services/Cache/PlatformSettingsCache.php`
+- **Methods:** `get()`, `update(array)`, `defaultTrialDays(): int`, `forgetCache()`
+- **Done when:** Cached 5 min; forget on update.
+- **Tests:** Unit — cache hit/miss; update invalidates.
+- **Edge cases:** Missing row falls back to seeder defaults.
+
+### Task 18.5 — User and workspace settings services
+
+- **Est.:** S
+- **Depends on:** 18.1, 18.2
+- **Files:** `UserSettingsService`, `WorkspaceSettingsService`, `NotificationPreferences` value object or cast on `User`
+- **Actions:** validate timezone against `timezone_identifiers_list()`; locale allowlist `en`; merge partial `notification_preferences`
+- **Done when:** Services read/update user and freelancer columns; User model casts preferences.
+- **Tests:** Unit — defaults, partial merge, invalid timezone rejected.
+- **Edge cases:** Unknown notification keys stripped on save.
+
+### Task 18.6 — UserSettingsResource and GET/PATCH /me/settings
+
+- **Est.:** M
+- **Depends on:** 18.5
+- **Files:** `UserSettingsController`, `ShowUserSettingsRequest`, `UpdateUserSettingsRequest`, `UserSettingsResource`; routes in `routes/features/v1/auth.php`
+- **Done when:** Authenticated user can read and patch own settings; path in `DocumentationTest`.
+- **Tests:** Feature — 200 shape; invalid timezone → 422; unauthenticated → 401.
+- **Edge cases:** PATCH with empty body returns current settings unchanged.
+
+### Task 18.7 — WorkspaceSettingsPolicy
+
+- **Est.:** XS
+- **Depends on:** 2.5, 18.5
+- **Files:** `WorkspaceSettingsPolicy` using `AuthorizesTenantMembership` — `view` = member, `update` = `canManageClientsAndProjects()`
+- **Done when:** Policy registered; member can view, member cannot update.
+- **Tests:** Unit or feature — matrix per role.
+- **Edge cases:** Super-admin with tenant context bypasses membership (read/write).
+
+### Task 18.8 — WorkspaceSettingsResource and GET/PATCH /workspace/settings
+
+- **Est.:** M
+- **Depends on:** 18.5, 18.7, 2.4
+- **Files:** `WorkspaceSettingsController`, requests, `WorkspaceSettingsResource`; routes in `routes/features/v1/tenancy.php`
+- **Middleware:** GET — `freelancer.context`; PATCH — add `writable.subscription`
+- **Done when:** Member read 200; owner/admin patch 200; member patch 403; read-only sub patch 403.
+- **Tests:** Feature — role matrix; path in `DocumentationTest`.
+- **Edge cases:** Invalid prefix characters → 422.
+
+### Task 18.9 — PlatformSettingsResource and GET/PATCH /admin/settings
+
+- **Est.:** M
+- **Depends on:** 18.4, 3.2
+- **Files:** `PlatformSettingsController`, requests, `PlatformSettingsResource`; routes in `routes/features/v1/admin.php`
+- **Done when:** Super-admin read/patch 200; regular user 403; cache invalidated on patch.
+- **Tests:** Feature — admin 200; user 403; invalid plan slug → 422.
+- **Edge cases:** `maintenance_mode` stored only — no middleware enforcement yet.
+
+### Task 18.10 — Invoice numbering uses workspace prefix
+
+- **Est.:** S
+- **Depends on:** 18.2, 8.2
+- **Files:** update `ClientInvoiceService::generateInvoiceNumber()` to load freelancer `invoice_number_prefix`
+- **Done when:** Prefix `ACME` yields `ACME-2026-0001`; default `INV` unchanged for existing workspaces.
+- **Tests:** Unit — custom prefix sequence; year rollover.
+- **Edge cases:** Prefix with hyphen handled in regex; unique per freelancer unchanged.
+
+### Task 18.11 — Default currency from workspace settings
+
+- **Est.:** S
+- **Depends on:** 18.2, 5.2, 8.2
+- **Files:** `StoreProjectRequest` / create action and `StoreClientInvoiceRequest` / create action — when `currency` omitted, resolve from active freelancer `default_currency`
+- **Done when:** Omitted currency uses workspace default; explicit body value wins.
+- **Tests:** Feature — create project/invoice without currency uses workspace `default_currency`.
+- **Edge cases:** Do not accept workspace default via request body — only internal fallback.
+
+### Task 18.12 — Onboarding uses platform trial default
+
+- **Est.:** XS
+- **Depends on:** 18.4, 3.5
+- **Files:** `FreelancerOnboardingService` — replace `DEFAULT_TRIAL_DAYS` constant with `PlatformSettingsService::defaultTrialDays()`; per-request `trial_days` still overrides
+- **Done when:** Onboarding without `trial_days` uses platform setting; admin PATCH updates future onboardings.
+- **Tests:** Feature or unit — custom platform default reflected in new subscription.
+- **Edge cases:** Cache stale max 5 min after platform PATCH.
+
+### Task 18.13 — Notification preference gates
+
+- **Est.:** S
+- **Depends on:** 18.5, 15.13
+- **Files:** `User::prefersNotification(string $key): bool` with role gates; apply in `TrialEndingSoonNotification::via()` and other Phase 15 subscription mails
+- **Done when:** Owner with `subscription_alerts: false` does not receive trial/payment mails; `true` receives them.
+- **Tests:** Feature — `Notification::fake()` with preference off → not sent.
+- **Edge cases:** Non-owner never receives subscription alerts regardless of preference.
+
+### Task 18.14 — Embed user settings summary on GET /me
+
+- **Est.:** S
+- **Depends on:** 18.6, 9.2
+- **Files:** `MeResource` — add `user_settings: { timezone, locale }`; update `docs/api/endpoints/me.md` and `docs/api/schemas/membership.md`
+- **Done when:** `GET /me` includes timezone/locale without extra round-trip.
+- **Tests:** Feature — me response includes `user_settings` keys.
+- **Edge cases:** Full `notification_preferences` remain on `/me/settings` only.
+
+### Task 18.15 — Settings isolation and documentation tests
+
+- **Est.:** S
+- **Depends on:** 18.6, 18.8, 18.9
+- **Files:** `tests/Feature/Settings/*`; update `DocumentationTest` for all six settings paths
+- **Done when:** All settings paths in OpenAPI spec; contract markdown aligned with Resources.
+- **Tests:** Feature — doc test; workspace settings require valid `X-Freelancer-Id` for multi-membership user.
+- **Edge cases:** Cross-tenant N/A — settings resolved from context, not route IDs.
+
+---
+
 ## Phase 16 — Platform growth (future)
 
 | Task | Description |
@@ -1256,13 +1413,14 @@ Respect **build order** within each PR — e.g. PR 5 must merge invoice items (1
 | 15 | 10.1 – 10.2 | Seed data and dev docs |
 | 16 | 11.1 – 11.5 | Tenant isolation tests |
 | 17 | 15.1 – 15.14 | Platform subscriptions (Stripe) |
-| 18+ | 12 – 14, 16 | Role cleanup, team, portal, growth |
+| 18 | 18.1 – 18.15 | Settings (user, workspace, platform) |
+| 19+ | 12 – 14, 16 | Role cleanup, team, portal, growth |
 
 ---
 
 ## Task checklist
 
-Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 15 platform subscriptions complete).
+Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-11 (Phase 18 settings complete).
 
 ```
 Phase 0
@@ -1423,4 +1581,21 @@ Phase 15 — Platform subscriptions ✅
 
 Phase 16 — Future
 [ ] 16.x Platform growth
+
+Phase 18 — Settings ✅
+[x] 18.1  User settings migration
+[x] 18.2  Workspace settings migration
+[x] 18.3  Platform settings table and seeder
+[x] 18.4  PlatformSettingsService and cache
+[x] 18.5  User and workspace settings services
+[x] 18.6  GET/PATCH /me/settings
+[x] 18.7  WorkspaceSettingsPolicy
+[x] 18.8  GET/PATCH /workspace/settings
+[x] 18.9  GET/PATCH /admin/settings
+[x] 18.10 Invoice numbering uses workspace prefix
+[x] 18.11 Default currency from workspace settings
+[x] 18.12 Onboarding uses platform trial default
+[x] 18.13 Notification preference gates
+[x] 18.14 Embed user settings summary on GET /me
+[x] 18.15 Settings isolation and documentation tests
 ```

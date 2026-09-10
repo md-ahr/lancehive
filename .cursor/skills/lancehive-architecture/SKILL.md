@@ -22,9 +22,9 @@ Freelancer → Subscription → Plan (platform billing)
 
 ## Feature modules
 
-`Auth` · `Tenancy` · `Delivery` · `ClientBilling` · `PlatformBilling` · `Admin` · `ClientPortal` (later)
+`Auth` · `Tenancy` · `Delivery` · `ClientBilling` · `PlatformBilling` · `Admin` · `ClientPortal` · `Settings`
 
-Dependency graph: Tenancy → Auth; Delivery → Tenancy; ClientBilling → Delivery + Tenancy; PlatformBilling → Tenancy; Admin → all via services.
+Dependency graph: Tenancy → Auth; Delivery → Tenancy; ClientBilling → Delivery + Tenancy; PlatformBilling → Tenancy; Settings → Auth + Tenancy; Admin → all via services.
 
 ## Layer rules
 

@@ -94,6 +94,28 @@ Policies live in `app/Features/{Feature}/Policies/`. Call from Form Request `aut
 | Task | member | member | member | member (soft) | Project must belong to tenant |
 | TimeLog | member | member | **own only** | **own only** | Admin/owner edits any |
 | ClientInvoice | member | owner/admin | owner/admin | owner/admin (draft) | Member read-only |
+| Workspace settings | member | — | owner/admin | — | Member read-only; resolved from `TenantContext` |
+| User settings | self | — | self | — | `/me/settings` only |
+| Platform settings | super-admin | — | super-admin | — | `/admin/settings` only |
+
+### Settings authorization
+
+| Endpoint | Middleware | Read | Write |
+|----------|------------|------|-------|
+| `GET/PATCH /me/settings` | `auth:sanctum` | Self | Self |
+| `GET /workspace/settings` | `auth:sanctum`, `freelancer.context` | Any member | — |
+| `PATCH /workspace/settings` | above + `writable.subscription` | — | Owner/admin (`canManageClientsAndProjects()`) |
+| `GET/PATCH /admin/settings` | `auth:sanctum`, `can:super-admin` | Super-admin | Super-admin |
+
+**Notification preference gates** (user scope):
+
+| Key | Honored when |
+|-----|--------------|
+| `subscription_alerts` | User is workspace owner (same rule as `/subscription/*`) |
+| `workspace_invites` | Always (all roles) |
+| `invoice_activity` | User is owner or admin |
+
+Policy: `WorkspaceSettingsPolicy` in `app/Features/Settings/Policies/`.
 
 ### Subscription read-only (`writable.subscription`)
 
@@ -137,7 +159,7 @@ Enforced in middleware, **not** in policies.
 | Group | Middleware | Who |
 |-------|------------|-----|
 | Public auth | `throttle:*` | Anyone |
-| Authenticated | `auth:sanctum` | Any logged-in user (`/me`, `/logout`) |
+| Authenticated | `auth:sanctum` | Any logged-in user (`/me`, `/me/settings`, `/logout`) |
 | Tenant read | `auth:sanctum`, `freelancer.context` | Workspace member |
 | Tenant write | above + `writable.subscription` | Writable subscription |
 | Admin | `auth:sanctum`, `can:super-admin` | Super-admin |

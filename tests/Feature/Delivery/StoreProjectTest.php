@@ -28,6 +28,20 @@ it('creates a project under a client for workspace member', function () {
     expect(Project::query()->where('name', 'Website Redesign')->exists())->toBeTrue();
 });
 
+it('uses workspace default currency when currency is omitted', function () {
+    $workspace = $this->createTenantWorkspace();
+    $workspace['freelancer']->update(['default_currency' => 'USD']);
+    $client = Client::factory()->for($workspace['freelancer'])->create();
+
+    $this->actingAsTenant($workspace['user'], $workspace['freelancer'])
+        ->postJson($this->apiUrl("clients/{$client->id}/projects"), [
+            'name' => 'USD Project',
+            'hourly_rate' => '100.00',
+        ])
+        ->assertCreated()
+        ->assertJsonPath('currency', 'USD');
+});
+
 it('returns validation error when hourly rate is missing', function () {
     $workspace = $this->createTenantWorkspace();
     $client = Client::factory()->for($workspace['freelancer'])->create();

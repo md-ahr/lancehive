@@ -25,6 +25,7 @@ Route file: `routes/features/v1/{feature}.php` · Controller/Resource: `app/Feat
 |-------|--------|
 | Authentication | 0 |
 | Users | 1 |
+| Settings | 15 |
 | Admin | 10 |
 | Tenancy | 20 |
 | Clients / Projects / Tasks / Time Logs | 30–40 |

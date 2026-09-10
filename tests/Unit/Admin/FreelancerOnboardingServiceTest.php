@@ -6,6 +6,7 @@ use App\Features\Admin\Services\FreelancerOnboardingService;
 use App\Features\Auth\Models\User;
 use App\Features\PlatformBilling\Models\Plan;
 use App\Features\PlatformBilling\Models\Subscription;
+use App\Features\Settings\Models\PlatformSettings;
 use App\Features\Tenancy\Enums\FreelancerMembershipRole;
 use App\Features\Tenancy\Enums\FreelancerStatus;
 use App\Features\Tenancy\Models\Freelancer;
@@ -48,6 +49,23 @@ it('creates freelancer owner membership and trialing subscription in one transac
     expect($subscription)->not->toBeNull()
         ->and($subscription->status->value)->toBe('trialing')
         ->and($subscription->trial_ends_at?->greaterThan(now()->addDays(20)))->toBeTrue();
+});
+
+it('uses platform default trial days when trial_days is omitted', function () {
+    PlatformSettings::factory()->create([
+        'id' => 1,
+        'default_trial_days' => 28,
+    ]);
+
+    $freelancer = app(FreelancerOnboardingService::class)->onboard([
+        'workspace_name' => 'Platform Trial Studio',
+        'owner_name' => 'Trial Owner',
+        'owner_email' => 'platform-trial@studio.test',
+    ]);
+
+    $subscription = Subscription::query()->where('freelancer_id', $freelancer->id)->first();
+
+    expect($subscription?->trial_ends_at?->greaterThan(now()->addDays(27)))->toBeTrue();
 });
 
 it('uses custom plan when plan_id is provided', function () {

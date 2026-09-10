@@ -23,6 +23,7 @@ use App\Features\Delivery\Models\Client;
 use App\Features\Delivery\Models\Project;
 use App\Features\Delivery\Models\TimeLog;
 use App\Features\PlatformBilling\Services\PlanLimitService;
+use App\Features\Tenancy\Models\Freelancer;
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
@@ -91,7 +92,9 @@ final class ProjectController extends Controller
             'client_id' => $client->id,
             'name' => $request->string('name')->toString(),
             'hourly_rate' => $request->validated('hourly_rate'),
-            'currency' => $request->validated('currency') ?? 'BDT',
+            'currency' => $request->validated('currency')
+                ?? Freelancer::query()->whereKey($freelancerId)->value('default_currency')
+                ?? 'BDT',
             'deadline' => $request->validated('deadline'),
             'status' => $request->validated('status') ?? ProjectStatus::Active,
         ]);

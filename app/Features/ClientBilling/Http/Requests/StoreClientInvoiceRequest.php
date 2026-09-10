@@ -27,6 +27,7 @@ final class StoreClientInvoiceRequest extends FormRequest
             'due_date' => ['sometimes', 'nullable', 'date'],
             'notes' => ['sometimes', 'nullable', 'string'],
             'tax_rate' => ['sometimes', 'nullable', 'decimal:0,2', 'gte:0'],
+            'currency' => ['sometimes', 'string', 'size:3'],
             'prefill_unbilled_time' => ['sometimes', 'boolean'],
         ];
     }

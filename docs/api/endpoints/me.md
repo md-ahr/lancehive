@@ -23,6 +23,10 @@ When `X-Client-Id` is omitted and the user belongs to exactly one client organiz
 ```json
 {
   "user": { /* UserResource */ },
+  "user_settings": {
+    "timezone": "UTC",
+    "locale": "en"
+  },
   "memberships": [ /* FreelancerMembershipResource[] */ ],
   "active_freelancer": { /* FreelancerResource | null */ },
   "subscription": {

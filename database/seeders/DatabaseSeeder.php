@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             PlanSeeder::class,
+            PlatformSettingsSeeder::class,
             UserSeeder::class,
             FreelancerSeeder::class,
             FreelancerMembershipSeeder::class,

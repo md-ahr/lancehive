@@ -7,6 +7,27 @@ use App\Features\ClientBilling\Models\ClientInvoice;
 use App\Features\ClientBilling\Models\ClientInvoiceItem;
 use App\Features\ClientBilling\Models\ClientInvoicePayment;
 
+it('generates sequential invoice numbers using workspace prefix', function () {
+    $seed = ClientInvoice::factory()->create();
+    test()->setTenantContext($seed->freelancer_id);
+    $seed->freelancer->update(['invoice_number_prefix' => 'ACME']);
+
+    $first = ClientInvoice::factory()->create([
+        'freelancer_id' => $seed->freelancer_id,
+        'project_id' => $seed->project_id,
+        'invoice_number' => null,
+    ]);
+
+    $second = ClientInvoice::factory()->create([
+        'freelancer_id' => $seed->freelancer_id,
+        'project_id' => $seed->project_id,
+        'invoice_number' => null,
+    ]);
+
+    expect($first->invoice_number)->toMatch('/^ACME-\d{4}-0001$/')
+        ->and($second->invoice_number)->toMatch('/^ACME-\d{4}-0002$/');
+});
+
 it('generates sequential invoice numbers per freelancer', function () {
     $invoice = ClientInvoice::factory()->create(['invoice_number' => null]);
     test()->setTenantContext($invoice->freelancer_id);

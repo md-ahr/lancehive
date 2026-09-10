@@ -421,7 +421,10 @@ erDiagram
 | email | varchar | UK |
 | email_verified_at | timestamp | nullable |
 | password | varchar | |
-| role | varchar | default `client` → migrate to `user` |
+| role | varchar | default `user` (`super_admin` for platform operators) |
+| timezone | varchar(64) | default `UTC` — Phase 18 |
+| locale | varchar(10) | default `en` — Phase 18 |
+| notification_preferences | jsonb | default subscription/invite/invoice toggles — Phase 18 |
 | remember_token | varchar | nullable |
 | created_at, updated_at | timestamp | |
 
@@ -467,7 +470,27 @@ erDiagram
 | slug | varchar | UK |
 | status | varchar | `pending`, `active`, `suspended` |
 | owner_user_id | bigint | FK → users |
+| default_currency | char(3) | default `BDT` — Phase 18 |
+| invoice_number_prefix | varchar(20) | default `INV` — Phase 18 |
+| default_tax_rate | decimal(5,2) | nullable — Phase 18 |
+| invoice_footer_notes | text | nullable — Phase 18 |
+| business_name | varchar | nullable — Phase 18 |
+| business_email | varchar | nullable — Phase 18 |
+| business_address | text | nullable — Phase 18 |
 | created_at, updated_at | timestamp | |
+
+### 4.5b `platform_settings` *(Phase 18 — singleton)*
+
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | bigint | PK — always `1` |
+| default_trial_days | int | default `14` |
+| default_plan_slug | varchar | default `starter` |
+| support_email | varchar | |
+| maintenance_mode | boolean | default `false` |
+| created_at, updated_at | timestamp | |
+
+Seeded on migrate. Super-admin editable via `PATCH /admin/settings`. Cached via `PlatformSettingsCache`.
 
 ### 4.6 `freelancer_memberships` *(planned)*
 

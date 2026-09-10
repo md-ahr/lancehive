@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Features\PlatformBilling\Notifications;
 
+use App\Features\Auth\Models\User;
 use App\Features\PlatformBilling\Models\Subscription;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,7 +22,15 @@ final class RenewalReceiptNotification extends Notification implements ShouldQue
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        if ($notifiable instanceof User
+            && $notifiable->prefersNotification(
+                'subscription_alerts',
+                $this->subscription->freelancer,
+            )) {
+            return ['mail'];
+        }
+
+        return [];
     }
 
     public function toMail(object $notifiable): MailMessage

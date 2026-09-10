@@ -77,6 +77,31 @@ Do **not** use generic names like `Invoice` or `Payment` alone — they are ambi
 
 ---
 
+## Settings model (Phase 18)
+
+Three scopes. **Role-specific** means access control (who can read/update), not different stored values per role.
+
+| Scope | Storage | API | Who reads | Who writes |
+|-------|---------|-----|-----------|------------|
+| **User** | `users.timezone`, `users.locale`, `users.notification_preferences` (jsonb) | `GET/PATCH /me/settings` | Self | Self |
+| **Workspace** | Columns on `freelancers` (currency, invoice prefix, business block, tax default) | `GET/PATCH /workspace/settings` | Any member | Owner/admin |
+| **Platform** | Singleton `platform_settings` row | `GET/PATCH /admin/settings` | Super-admin | Super-admin |
+
+**Integrations:**
+
+- `ClientInvoiceService::generateInvoiceNumber()` uses workspace `invoice_number_prefix` (default `INV`).
+- Project/invoice create uses workspace `default_currency` when request omits `currency`.
+- `FreelancerOnboardingService` uses platform `default_trial_days` when `trial_days` omitted.
+- Subscription emails respect user `notification_preferences.subscription_alerts` (owner only).
+
+**Cache:** `PlatformSettingsCache` — 5 min TTL; forget on PATCH (same pattern as `PlanCache`).
+
+**Deferred:** client-portal settings, `maintenance_mode` enforcement middleware, `bn` locale, settings audit log.
+
+Detail: [docs/api/endpoints/settings.md](../api/endpoints/settings.md) · [schemas/settings.md](../api/schemas/settings.md).
+
+---
+
 ## Entity schemas
 
 ### Project

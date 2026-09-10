@@ -20,6 +20,10 @@ final class MeResource extends JsonResource
     {
         return [
             'user' => new UserResource($this->resource['user']),
+            'user_settings' => [
+                'timezone' => $this->resource['user']->timezone,
+                'locale' => $this->resource['user']->locale,
+            ],
             'memberships' => FreelancerMembershipResource::collection($this->resource['memberships']),
             'active_freelancer' => $this->resource['active_freelancer'] !== null
                 ? new FreelancerResource($this->resource['active_freelancer'])

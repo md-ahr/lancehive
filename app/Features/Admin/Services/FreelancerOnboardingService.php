@@ -10,6 +10,7 @@ use App\Features\PlatformBilling\Enums\SubscriptionProvider;
 use App\Features\PlatformBilling\Enums\SubscriptionStatus;
 use App\Features\PlatformBilling\Models\Plan;
 use App\Features\PlatformBilling\Models\Subscription;
+use App\Features\Settings\Services\PlatformSettingsService;
 use App\Features\Tenancy\Cache\MembershipCache;
 use App\Features\Tenancy\Enums\FreelancerMembershipRole;
 use App\Features\Tenancy\Enums\FreelancerStatus;
@@ -21,9 +22,10 @@ use Illuminate\Support\Str;
 
 final class FreelancerOnboardingService
 {
-    private const int DEFAULT_TRIAL_DAYS = 14;
-
-    public function __construct(private readonly MembershipCache $membershipCache) {}
+    public function __construct(
+        private readonly MembershipCache $membershipCache,
+        private readonly PlatformSettingsService $platformSettingsService,
+    ) {}
 
     /**
      * @param  array{
@@ -58,7 +60,7 @@ final class FreelancerOnboardingService
             ]);
 
             $plan = $this->resolvePlan($data['plan_id'] ?? null);
-            $trialDays = $data['trial_days'] ?? self::DEFAULT_TRIAL_DAYS;
+            $trialDays = $data['trial_days'] ?? $this->platformSettingsService->defaultTrialDays();
 
             Subscription::query()->create([
                 'freelancer_id' => $freelancer->id,

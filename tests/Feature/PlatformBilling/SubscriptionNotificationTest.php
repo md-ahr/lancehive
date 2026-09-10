@@ -29,6 +29,27 @@ it('sends trial ending notifications only once per trial', function () {
     Notification::assertSentToTimes($owner, TrialEndingSoonNotification::class, 1);
 });
 
+it('does not send trial ending notifications when owner disabled subscription alerts', function () {
+    Notification::fake();
+
+    $owner = User::factory()->user()->create([
+        'notification_preferences' => [
+            'subscription_alerts' => false,
+            'workspace_invites' => true,
+            'invoice_activity' => true,
+        ],
+    ]);
+    $freelancer = Freelancer::factory()->active()->create(['owner_user_id' => $owner->id]);
+    $plan = Plan::factory()->create();
+    Subscription::factory()->for($freelancer)->for($plan)->create([
+        'trial_ends_at' => now()->addDays(3),
+    ]);
+
+    $this->artisan('subscriptions:notify-trial-ending')->assertSuccessful();
+
+    Notification::assertNothingSent();
+});
+
 it('sends trial ending notifications', function () {
     Notification::fake();
 

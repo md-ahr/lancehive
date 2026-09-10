@@ -31,6 +31,8 @@ it('allows authenticated freelancer to access me endpoint', function () {
         ->assertJsonPath('user.id', $freelancer->id)
         ->assertJsonPath('user.email', 'freelancer@example.com')
         ->assertJsonPath('user.role', UserRole::User->value)
+        ->assertJsonPath('user_settings.timezone', 'UTC')
+        ->assertJsonPath('user_settings.locale', 'en')
         ->assertJsonPath('memberships', [])
         ->assertJsonPath('active_freelancer', null)
         ->assertJsonPath('subscription', null);

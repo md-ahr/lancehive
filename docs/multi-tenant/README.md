@@ -26,7 +26,8 @@ Documentation for LanceHive's freelancer workspace architecture.
 - **Custom plan** — freelancer contacts you for unlimited clients/projects.
 - **MVP:** single database, row-level isolation via `freelancer_id`; cursor pagination and tenant query rules from day one (see [design-rationale-and-scaling.md](./design-rationale-and-scaling.md)).
 - **API:** versioned at `/api/v1` — route files in `routes/features/v1/`; `app/Features/` and tests are not folder-versioned. See [architecture-overview § API versioning](./architecture-overview.md#api-versioning) and [feature-based-architecture §8.1](../project-structure/feature-based-architecture.md#81-versioning-vs-folder-structure).
-- **Cache:** Redis for plans, subscription status, and `/me` memberships — PostgreSQL stays the data store only ([architecture-overview § Caching](./architecture-overview.md#caching-strategy)).
+- **Cache:** Redis for plans, subscription status, platform settings, and `/me` memberships — PostgreSQL stays the data store only ([architecture-overview § Caching](./architecture-overview.md#caching-strategy)).
+- **Settings (Phase 18):** user preferences (`/me/settings`), workspace defaults (`/workspace/settings`), platform config (`/admin/settings`) — [architecture-overview § Settings](./architecture-overview.md#settings-model-phase-18).
 - **Client portal login:** designed now, shipped in a later phase.
 
 ## Domain at a glance

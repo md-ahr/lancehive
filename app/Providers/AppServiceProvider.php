@@ -7,6 +7,8 @@ use App\Core\Tenancy\TenantContext;
 use App\Features\Auth\Models\User;
 use App\Features\PlatformBilling\Contracts\StripeGateway;
 use App\Features\PlatformBilling\Services\StripeCashierGateway;
+use App\Features\Settings\Models\WorkspaceSettings;
+use App\Features\Settings\Policies\WorkspaceSettingsPolicy;
 use App\Features\Tenancy\Models\Freelancer;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
@@ -54,6 +56,8 @@ class AppServiceProvider extends ServiceProvider
                 .'?token='.$token
                 .'&email='.urlencode($user->email);
         });
+
+        Gate::policy(WorkspaceSettings::class, WorkspaceSettingsPolicy::class);
 
         Gate::define('super-admin', fn (User $user) => $user->isSuperAdmin());
         Gate::define('freelancer', fn (User $user) => $user->isFreelancer());

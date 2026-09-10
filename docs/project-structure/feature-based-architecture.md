@@ -190,6 +190,7 @@ Not every feature needs every subfolder — create folders when the first file a
 | **PlatformBilling** | `App\Features\PlatformBilling` | `Plan`, `Subscription`, `SubscriptionCharge` | `/subscription`, `/webhooks/stripe` |
 | **Admin** | `App\Features\Admin` | — (uses other features via services) | `/admin/*` |
 | **ClientPortal** | `App\Features\ClientPortal` | `ClientMembership` (Phase 14) | `/portal/*` |
+| **Settings** | `App\Features\Settings` | `PlatformSettings` (singleton); user/workspace columns on `User` / `Freelancer` | `/me/settings`, `/workspace/settings`, `/admin/settings` |
 
 ### 5.3 Example: Delivery feature
 
@@ -340,6 +341,7 @@ flowchart BT
 | PlatformBilling | Tenancy, Core | ClientBilling, Delivery |
 | Admin | All features **via HTTP-facing services only** | — |
 | ClientPortal | Tenancy, Delivery (read), Core | ClientBilling writes, PlatformBilling |
+| Settings | Auth, Tenancy, Core | Delivery, ClientBilling, PlatformBilling |
 
 **Enforcement tips:**
 

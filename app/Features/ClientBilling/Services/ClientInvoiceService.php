@@ -12,6 +12,7 @@ use App\Features\ClientBilling\Models\ClientInvoiceItem;
 use App\Features\ClientBilling\Models\ClientInvoicePayment;
 use App\Features\Delivery\Models\Project;
 use App\Features\Delivery\Models\TimeLog;
+use App\Features\Tenancy\Models\Freelancer;
 use Illuminate\Support\Facades\DB;
 
 final class ClientInvoiceService
@@ -29,7 +30,12 @@ final class ClientInvoiceService
     {
         return DB::transaction(function () use ($freelancerId): string {
             $year = now()->format('Y');
-            $prefix = "INV-{$year}-";
+            $workspacePrefix = Freelancer::query()
+                ->whereKey($freelancerId)
+                ->value('invoice_number_prefix') ?? 'INV';
+            $workspacePrefix = is_string($workspacePrefix) && $workspacePrefix !== '' ? $workspacePrefix : 'INV';
+            $prefix = "{$workspacePrefix}-{$year}-";
+            $pattern = '/^'.preg_quote($workspacePrefix, '/').'-\d{4}-(\d+)$/';
 
             $lastNumber = ClientInvoice::withoutGlobalScopes()
                 ->where('freelancer_id', $freelancerId)
@@ -40,7 +46,7 @@ final class ClientInvoiceService
 
             $sequence = 1;
 
-            if ($lastNumber !== null && preg_match('/^INV-\d{4}-(\d+)$/', $lastNumber, $matches) === 1) {
+            if ($lastNumber !== null && preg_match($pattern, $lastNumber, $matches) === 1) {
                 $sequence = (int) $matches[1] + 1;
             }
 
@@ -59,10 +65,18 @@ final class ClientInvoiceService
             throw new ApiException(ApiErrorCode::NotFound);
         }
 
+        $currency = $attributes['currency'] ?? $project->currency;
+
+        if ($currency === null && $project->freelancer_id !== null) {
+            $currency = Freelancer::query()
+                ->whereKey($project->freelancer_id)
+                ->value('default_currency');
+        }
+
         $invoice = ClientInvoice::query()->create([
             'project_id' => $project->id,
             'status' => ClientInvoiceStatus::Draft,
-            'currency' => $project->currency,
+            'currency' => is_string($currency) && $currency !== '' ? $currency : 'BDT',
             'subtotal' => '0.00',
             'tax_rate' => $attributes['tax_rate'] ?? null,
             'tax_amount' => '0.00',

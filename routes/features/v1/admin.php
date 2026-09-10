@@ -3,6 +3,7 @@
 use App\Features\Admin\Http\Controllers\FreelancerController;
 use App\Features\Admin\Http\Controllers\FreelancerSubscriptionController;
 use App\Features\Admin\Http\Controllers\PlanController;
+use App\Features\Settings\Http\Controllers\PlatformSettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')
@@ -34,4 +35,10 @@ Route::prefix('admin')
 
         Route::patch('/plans/{plan}', [PlanController::class, 'update'])
             ->name('admin.plans.update');
+
+        Route::get('/settings', [PlatformSettingsController::class, 'show'])
+            ->name('admin.settings.show');
+
+        Route::patch('/settings', [PlatformSettingsController::class, 'update'])
+            ->name('admin.settings.update');
     });

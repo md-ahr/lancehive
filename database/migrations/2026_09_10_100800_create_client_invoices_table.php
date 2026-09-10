@@ -25,7 +25,7 @@ return new class extends Migration
             $table->dateTime('sent_at')->nullable();
             $table->dateTime('paid_at')->nullable();
             $table->text('notes')->nullable();
-            $table->string('bill_to_name');
+            $table->string('bill_to_name')->nullable();
             $table->string('bill_to_email')->nullable();
             $table->text('bill_to_address')->nullable();
             $table->softDeletes();

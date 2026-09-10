@@ -8,4 +8,4 @@ use Tests\TestCase;
 pest()->extend(TestCase::class)
     ->in('Feature', 'Unit');
 
-uses(RefreshDatabase::class)->in('Feature', 'Unit/Auth');
+uses(RefreshDatabase::class)->in('Feature', 'Unit');

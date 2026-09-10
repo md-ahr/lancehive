@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Features\ClientBilling\Models;
 
+use App\Features\ClientBilling\Services\ClientInvoiceService;
 use App\Features\Delivery\Models\TimeLog;
 use Database\Factories\ClientBilling\ClientInvoiceItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -28,6 +29,20 @@ final class ClientInvoiceItem extends Model
             'rate' => 'decimal:2',
             'amount' => 'decimal:2',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        $recalculate = function (ClientInvoiceItem $item): void {
+            $invoice = $item->clientInvoice;
+
+            if ($invoice !== null) {
+                app(ClientInvoiceService::class)->recalculateTotals($invoice);
+            }
+        };
+
+        self::saved($recalculate);
+        self::deleted($recalculate);
     }
 
     protected static function newFactory(): ClientInvoiceItemFactory

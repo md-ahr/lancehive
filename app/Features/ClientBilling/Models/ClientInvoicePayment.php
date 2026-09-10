@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Features\ClientBilling\Models;
 
 use App\Features\ClientBilling\Enums\ClientPaymentMethod;
+use App\Features\ClientBilling\Services\ClientInvoiceService;
 use Database\Factories\ClientBilling\ClientInvoicePaymentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,6 +28,20 @@ final class ClientInvoicePayment extends Model
             'payment_method' => ClientPaymentMethod::class,
             'paid_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        $syncPaymentStatus = function (ClientInvoicePayment $payment): void {
+            $invoice = $payment->clientInvoice;
+
+            if ($invoice !== null) {
+                app(ClientInvoiceService::class)->syncPaymentStatus($invoice);
+            }
+        };
+
+        self::saved($syncPaymentStatus);
+        self::deleted($syncPaymentStatus);
     }
 
     protected static function newFactory(): ClientInvoicePaymentFactory

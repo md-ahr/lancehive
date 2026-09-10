@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Features\ClientBilling\Models;
 
 use App\Features\ClientBilling\Enums\ClientInvoiceStatus;
+use App\Features\ClientBilling\Services\ClientInvoiceService;
 use App\Features\Delivery\Models\Project;
 use App\Features\Tenancy\Models\Freelancer;
 use Database\Factories\ClientBilling\ClientInvoiceFactory;
@@ -55,6 +56,13 @@ final class ClientInvoice extends Model
             'sent_at' => 'datetime',
             'paid_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        self::creating(function (ClientInvoice $invoice): void {
+            app(ClientInvoiceService::class)->assignInvoiceNumber($invoice);
+        });
     }
 
     protected static function newFactory(): ClientInvoiceFactory

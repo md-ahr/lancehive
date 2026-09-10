@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use InvalidArgumentException;
 
 #[Fillable([
     'client_id',
@@ -39,6 +40,15 @@ final class Project extends Model
             'status' => ProjectStatus::class,
             'deadline' => 'date',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        self::creating(function (Project $project): void {
+            if ($project->hourly_rate === null) {
+                throw new InvalidArgumentException('hourly_rate is required when creating a project.');
+            }
+        });
     }
 
     protected static function newFactory(): ProjectFactory

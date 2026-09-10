@@ -65,4 +65,39 @@ class SubscriptionFactory extends Factory
             'trial_ends_at' => now()->subDay(),
         ]);
     }
+
+    public function pastDue(): static
+    {
+        return $this->state(fn () => [
+            'status' => SubscriptionStatus::PastDue,
+            'billing_interval' => BillingInterval::Monthly,
+            'trial_ends_at' => null,
+            'current_period_start' => now()->subMonth(),
+            'current_period_end' => now()->addDays(7),
+        ]);
+    }
+
+    public function canceledInPeriod(): static
+    {
+        return $this->state(fn () => [
+            'status' => SubscriptionStatus::Canceled,
+            'billing_interval' => BillingInterval::Monthly,
+            'trial_ends_at' => null,
+            'canceled_at' => now(),
+            'current_period_start' => now()->subMonth(),
+            'current_period_end' => now()->addMonth(),
+        ]);
+    }
+
+    public function canceledPostPeriod(): static
+    {
+        return $this->state(fn () => [
+            'status' => SubscriptionStatus::Canceled,
+            'billing_interval' => BillingInterval::Monthly,
+            'trial_ends_at' => null,
+            'canceled_at' => now()->subMonth(),
+            'current_period_start' => now()->subMonths(2),
+            'current_period_end' => now()->subDay(),
+        ]);
+    }
 }

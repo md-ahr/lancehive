@@ -41,6 +41,7 @@ final class SubscriptionService
                     'status' => SubscriptionStatus::Trialing,
                     'billing_interval' => null,
                     'trial_ends_at' => now()->addDays($days),
+                    'trial_ending_notified_at' => null,
                     'current_period_start' => null,
                     'current_period_end' => null,
                     'read_only_at' => null,

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Jobs;
+namespace App\Features\ClientBilling\Jobs;
 
 use App\Features\ClientBilling\Enums\ClientInvoiceStatus;
 use App\Features\ClientBilling\Models\ClientInvoice;

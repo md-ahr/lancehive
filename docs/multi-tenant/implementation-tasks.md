@@ -366,7 +366,7 @@ Build **after** Task 1.21 — `client_invoice_item_id` FK targets `client_invoic
 
 - **Est.:** S
 - **Depends on:** 1.9
-- **Done when:** All members can CRUD clients in their workspace.
+- **Done when:** All members can view clients; owner/admin can create, update, and archive (Phase 13.4 tightens member writes).
 - **Tests:** Unit — member allowed; non-member denied.
 - **Edge cases:** See policy matrix in acceptance-criteria.md.
 
@@ -374,7 +374,7 @@ Build **after** Task 1.21 — `client_invoice_item_id` FK targets `client_invoic
 
 - **Est.:** S
 - **Depends on:** 1.12
-- **Done when:** Members can CRUD projects; client must belong to tenant.
+- **Done when:** All members can view projects; owner/admin can create, update, and soft-delete; client must belong to tenant (Phase 13.4 tightens member writes).
 - **Tests:** Unit — tenant project allowed; other tenant's client denied.
 - **Edge cases:** Project on archived client (document behavior).
 
@@ -893,7 +893,7 @@ Build **after** Task 1.21 — `client_invoice_item_id` FK targets `client_invoic
 
 - **Est.:** S
 - **Depends on:** 1.20
-- **Files:** `app/Jobs/MarkOverdueClientInvoices.php`
+- **Files:** `app/Features/ClientBilling/Jobs/MarkOverdueClientInvoices.php` (scheduled daily in `bootstrap/app.php`)
 - **Actions:** Daily — `sent` past `due_date` → `overdue`
 - **Done when:** Job marks eligible invoices overdue.
 - **Tests:** Unit/job — sent + past due → overdue; paid skipped.

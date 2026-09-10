@@ -31,7 +31,7 @@ it('denies regular users from admin freelancer routes', function () {
         ->assertJsonPath('code', 'super_admin_required');
 });
 
-it('denies super admin without membership from tenant client routes', function () {
+it('allows super admin without membership to access tenant client routes with header', function () {
     $workspaceB = $this->createTenantWorkspace();
     Client::factory()->for($workspaceB['freelancer'])->create(['name' => 'Workspace B Client']);
     $admin = User::factory()->superAdmin()->create();
@@ -40,8 +40,9 @@ it('denies super admin without membership from tenant client routes', function (
 
     $this->withHeader('X-Freelancer-Id', (string) $workspaceB['freelancer']->id)
         ->getJson($this->apiUrl('clients'))
-        ->assertForbidden()
-        ->assertJsonPath('code', 'forbidden');
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.name', 'Workspace B Client');
 });
 
 it('ignores freelancer_id query override for regular users on tenant routes', function () {

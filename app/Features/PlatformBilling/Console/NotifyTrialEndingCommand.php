@@ -25,6 +25,7 @@ final class NotifyTrialEndingCommand extends Command
             ->with(['freelancer.owner', 'plan'])
             ->where('status', SubscriptionStatus::Trialing)
             ->whereDate('trial_ends_at', $targetDate)
+            ->whereNull('trial_ending_notified_at')
             ->get();
 
         foreach ($subscriptions as $subscription) {
@@ -32,6 +33,7 @@ final class NotifyTrialEndingCommand extends Command
 
             if ($owner instanceof User) {
                 Notification::send($owner, new TrialEndingSoonNotification($subscription));
+                $subscription->update(['trial_ending_notified_at' => now()]);
             }
         }
 

@@ -16,19 +16,17 @@ final class ClientInvoicePolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->isMember($user);
+        return $this->canAccessTenant($user);
     }
 
     public function view(User $user, ClientInvoice $clientInvoice): bool
     {
-        return $this->isMember($user);
+        return $this->canAccessTenant($user);
     }
 
     public function create(User $user, ?Project $project = null): bool
     {
-        $membership = $this->membershipFor($user);
-
-        if (! ($membership?->role->canManageInvoices() ?? false)) {
+        if (! $this->canManageInvoices($user)) {
             return false;
         }
 
@@ -43,15 +41,11 @@ final class ClientInvoicePolicy
 
     public function update(User $user, ClientInvoice $clientInvoice): bool
     {
-        $membership = $this->membershipFor($user);
-
-        return $membership?->role->canManageInvoices() ?? false;
+        return $this->canManageInvoices($user);
     }
 
     public function delete(User $user, ClientInvoice $clientInvoice): bool
     {
-        $membership = $this->membershipFor($user);
-
-        return $membership?->role->canManageInvoices() ?? false;
+        return $this->canManageInvoices($user);
     }
 }

@@ -150,6 +150,88 @@ it('syncs checkout completed webhook and activates subscription', function () {
         ->and(Cache::has('subscription:freelancer:'.$freelancer->id))->toBeFalse();
 });
 
+it('syncs payment failed webhook to past due and creates failed charge', function () {
+    $freelancer = Freelancer::factory()->active()->create();
+    $plan = Plan::factory()->create();
+    $subscription = Subscription::factory()
+        ->for($freelancer)
+        ->for($plan)
+        ->active()
+        ->create(['provider_subscription_id' => 'sub_fail_unit']);
+
+    Cache::flush();
+
+    app(SubscriptionService::class)->syncFromStripeWebhook([
+        'type' => 'invoice.payment_failed',
+        'data' => [
+            'object' => [
+                'id' => 'in_fail_unit',
+                'subscription' => 'sub_fail_unit',
+                'amount_due' => 20000,
+                'currency' => 'bdt',
+                'attempt_count' => 1,
+            ],
+        ],
+    ]);
+
+    expect($subscription->fresh()->status)->toBe(SubscriptionStatus::PastDue)
+        ->and(SubscriptionCharge::query()->where('provider_charge_id', 'in_fail_unit')->exists())->toBeTrue()
+        ->and(Cache::has('subscription:freelancer:'.$freelancer->id))->toBeFalse();
+});
+
+it('syncs subscription updated webhook', function () {
+    $freelancer = Freelancer::factory()->active()->create();
+    $plan = Plan::factory()->create();
+    $subscription = Subscription::factory()
+        ->for($freelancer)
+        ->for($plan)
+        ->active()
+        ->create(['provider_subscription_id' => 'sub_update_unit']);
+
+    Cache::flush();
+
+    app(SubscriptionService::class)->syncFromStripeWebhook([
+        'type' => 'customer.subscription.updated',
+        'data' => [
+            'object' => [
+                'id' => 'sub_update_unit',
+                'status' => 'past_due',
+                'current_period_start' => now()->timestamp,
+                'current_period_end' => now()->addMonth()->timestamp,
+                'cancel_at_period_end' => false,
+            ],
+        ],
+    ]);
+
+    expect($subscription->fresh()->status)->toBe(SubscriptionStatus::PastDue)
+        ->and(Cache::has('subscription:freelancer:'.$freelancer->id))->toBeFalse();
+});
+
+it('syncs subscription deleted webhook to canceled', function () {
+    $freelancer = Freelancer::factory()->active()->create();
+    $plan = Plan::factory()->create();
+    $subscription = Subscription::factory()
+        ->for($freelancer)
+        ->for($plan)
+        ->active()
+        ->create(['provider_subscription_id' => 'sub_delete_unit']);
+
+    Cache::flush();
+
+    app(SubscriptionService::class)->syncFromStripeWebhook([
+        'type' => 'customer.subscription.deleted',
+        'data' => [
+            'object' => [
+                'id' => 'sub_delete_unit',
+            ],
+        ],
+    ]);
+
+    expect($subscription->fresh()->status)->toBe(SubscriptionStatus::Canceled)
+        ->and($subscription->fresh()->canceled_at)->not->toBeNull()
+        ->and(Cache::has('subscription:freelancer:'.$freelancer->id))->toBeFalse();
+});
+
 it('ignores duplicate webhook charge ids', function () {
     $freelancer = Freelancer::factory()->active()->create();
     $plan = Plan::factory()->create();

@@ -27,4 +27,27 @@ trait AuthorizesTenantMembership
     {
         return $this->membershipFor($user) !== null;
     }
+
+    protected function canAccessTenant(User $user): bool
+    {
+        return $user->isSuperAdmin() || $this->isMember($user);
+    }
+
+    protected function canManageClientsAndProjects(User $user): bool
+    {
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        return $this->membershipFor($user)?->role->canManageClientsAndProjects() ?? false;
+    }
+
+    protected function canManageInvoices(User $user): bool
+    {
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        return $this->membershipFor($user)?->role->canManageInvoices() ?? false;
+    }
 }

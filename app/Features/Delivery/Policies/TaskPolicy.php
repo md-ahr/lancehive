@@ -16,17 +16,17 @@ final class TaskPolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->isMember($user);
+        return $this->canAccessTenant($user);
     }
 
     public function view(User $user, Task $task): bool
     {
-        return $this->isMember($user);
+        return $this->canAccessTenant($user);
     }
 
     public function create(User $user, ?Project $project = null): bool
     {
-        if (! $this->isMember($user)) {
+        if (! $this->canAccessTenant($user)) {
             return false;
         }
 
@@ -39,12 +39,12 @@ final class TaskPolicy
 
     public function update(User $user, Task $task): bool
     {
-        return $this->isMember($user);
+        return $this->canAccessTenant($user);
     }
 
     public function delete(User $user, Task $task): bool
     {
-        return $this->isMember($user);
+        return $this->canAccessTenant($user);
     }
 
     private function projectBelongsToTenant(Project $project): bool

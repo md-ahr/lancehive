@@ -5,8 +5,10 @@ use App\Core\Http\Exceptions\ApiException;
 use App\Core\Http\Middleware\EnsureClientContext;
 use App\Core\Http\Middleware\EnsureFreelancerContext;
 use App\Core\Http\Middleware\EnsureWritableSubscription;
+use App\Features\ClientBilling\Jobs\MarkOverdueClientInvoices;
 use App\Features\PlatformBilling\Console\NotifyTrialEndingCommand;
 use App\Features\PlatformBilling\Console\SyncPlansWithStripeCommand;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,6 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
         SyncPlansWithStripeCommand::class,
         NotifyTrialEndingCommand::class,
     ])
+    ->withSchedule(function (Schedule $schedule): void {
+        $schedule->job(new MarkOverdueClientInvoices)->daily();
+        $schedule->command('subscriptions:notify-trial-ending')->daily();
+    })
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',

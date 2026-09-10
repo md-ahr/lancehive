@@ -16,19 +16,17 @@ final class ProjectPolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->isMember($user);
+        return $this->canAccessTenant($user);
     }
 
     public function view(User $user, Project $project): bool
     {
-        return $this->isMember($user);
+        return $this->canAccessTenant($user);
     }
 
     public function create(User $user, ?Client $client = null): bool
     {
-        $membership = $this->membershipFor($user);
-
-        if (! ($membership?->role->canManageClientsAndProjects() ?? false)) {
+        if (! $this->canManageClientsAndProjects($user)) {
             return false;
         }
 
@@ -41,12 +39,12 @@ final class ProjectPolicy
 
     public function update(User $user, Project $project): bool
     {
-        return $this->membershipFor($user)?->role->canManageClientsAndProjects() ?? false;
+        return $this->canManageClientsAndProjects($user);
     }
 
     public function delete(User $user, Project $project): bool
     {
-        return $this->membershipFor($user)?->role->canManageClientsAndProjects() ?? false;
+        return $this->canManageClientsAndProjects($user);
     }
 
     private function clientBelongsToTenant(Client $client): bool

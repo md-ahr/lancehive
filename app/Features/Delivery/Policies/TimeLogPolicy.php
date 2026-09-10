@@ -15,21 +15,25 @@ final class TimeLogPolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->isMember($user);
+        return $this->canAccessTenant($user);
     }
 
     public function view(User $user, TimeLog $timeLog): bool
     {
-        return $this->isMember($user);
+        return $this->canAccessTenant($user);
     }
 
     public function create(User $user, ?Task $task = null): bool
     {
-        return $this->isMember($user);
+        return $this->canAccessTenant($user);
     }
 
     public function update(User $user, TimeLog $timeLog): bool
     {
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         $membership = $this->membershipFor($user);
 
         if ($membership === null) {

@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Features\ClientBilling\Enums\ClientInvoiceStatus;
+use App\Features\ClientBilling\Jobs\MarkOverdueClientInvoices;
 use App\Features\ClientBilling\Models\ClientInvoice;
-use App\Jobs\MarkOverdueClientInvoices;
 
 it('marks sent invoices past due date as overdue', function () {
     $overdue = ClientInvoice::factory()->sent()->create([

@@ -73,6 +73,12 @@ Tenant API requests from a freelancer user require the `X-Freelancer-Id` header 
 
 Seeded sample data: 2 clients (Acme Corp, Globex Ltd), 3 projects with hourly rates, tasks, time logs, and a draft client invoice.
 
+Plans are seeded with dev Stripe price ID placeholders (`price_dev_*`). For live Stripe checkout, sync real price IDs after seeding:
+
+```bash
+vendor/bin/sail artisan plans:sync-stripe
+```
+
 ## How to build
 
 Work through [implementation-tasks.md](./implementation-tasks.md) in order. Each task is intentionally small — one PR or one focused session. Do not skip tenant isolation tests (Phase 11).

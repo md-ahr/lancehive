@@ -13,6 +13,22 @@ use App\Features\PlatformBilling\Services\SubscriptionService;
 use App\Features\Tenancy\Models\Freelancer;
 use Illuminate\Support\Facades\Notification;
 
+it('sends trial ending notifications only once per trial', function () {
+    Notification::fake();
+
+    $owner = User::factory()->user()->create();
+    $freelancer = Freelancer::factory()->active()->create(['owner_user_id' => $owner->id]);
+    $plan = Plan::factory()->create();
+    Subscription::factory()->for($freelancer)->for($plan)->create([
+        'trial_ends_at' => now()->addDays(3),
+    ]);
+
+    $this->artisan('subscriptions:notify-trial-ending')->assertSuccessful();
+    $this->artisan('subscriptions:notify-trial-ending')->assertSuccessful();
+
+    Notification::assertSentToTimes($owner, TrialEndingSoonNotification::class, 1);
+});
+
 it('sends trial ending notifications', function () {
     Notification::fake();
 

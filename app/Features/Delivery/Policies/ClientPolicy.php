@@ -14,26 +14,26 @@ final class ClientPolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->isMember($user);
+        return $this->canAccessTenant($user);
     }
 
     public function view(User $user, Client $client): bool
     {
-        return $this->isMember($user);
+        return $this->canAccessTenant($user);
     }
 
     public function create(User $user): bool
     {
-        return $this->membershipFor($user)?->role->canManageClientsAndProjects() ?? false;
+        return $this->canManageClientsAndProjects($user);
     }
 
     public function update(User $user, Client $client): bool
     {
-        return $this->membershipFor($user)?->role->canManageClientsAndProjects() ?? false;
+        return $this->canManageClientsAndProjects($user);
     }
 
     public function delete(User $user, Client $client): bool
     {
-        return $this->membershipFor($user)?->role->canManageClientsAndProjects() ?? false;
+        return $this->canManageClientsAndProjects($user);
     }
 }

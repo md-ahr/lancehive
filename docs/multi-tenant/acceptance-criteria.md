@@ -85,15 +85,17 @@ Nested creates must inherit tenant through parent relation — never accept raw 
 | Policy | viewAny / view | create | update | delete | Member notes |
 |--------|----------------|--------|--------|--------|--------------|
 | Freelancer (2.5) | Member of workspace | — | Owner/admin | — | View own workspace |
-| Client (2.6) | Member | Member | Member | Member (archive) | Full CRUD |
-| Project (2.7) | Member | Member | Member | Member (soft) | Client must be in tenant |
+| Client (2.6) | Member | Owner/admin | Owner/admin | Owner/admin (archive) | Members read-only (Phase 13.4) |
+| Project (2.7) | Member | Owner/admin | Owner/admin | Owner/admin (soft) | Members read-only; client must be in tenant |
 | Task (2.8) | Member | Member | Member | Member (soft) | Project must be in tenant |
 | TimeLog (2.9) | Member | Member | **Own logs only** | **Own logs only** | Admin/owner edits any |
 | ClientInvoice (2.10) | Member | Owner/admin | Owner/admin | Owner/admin (draft) | Member read-only |
 
 Cross-tenant resource ID at policy layer → deny → controller returns `404`.
 
-Read-only subscription blocking is **not** in policies — handled by `EnsureWritableSubscription` (Task 15.10).
+Super-admin with active `TenantContext` bypasses membership checks for all tenant policies (read and write).
+
+Read-only subscription blocking is **not** in policies — handled by `EnsureWritableSubscription` (Task 15.10); super-admin bypasses that middleware too.
 
 ### Service boundaries (2.11)
 
@@ -193,9 +195,10 @@ Use real HTTP + middleware — do not bypass `EnsureFreelancerContext` or global
 |-------|--------|----------|
 | Super-admin | `GET /admin/freelancers` | 200 |
 | Regular user | `GET /admin/freelancers` | 403 |
-| Super-admin | Tenant route with `?freelancer_id=B` | 200 for B's data |
-| Regular user | `?freelancer_id=` override | Ignored or 403 |
-| Super-admin | Override on sensitive action | `admin_activity_logs` row created |
+| Super-admin | Admin route with `?freelancer_id=B` | 200 for B's workspace context |
+| Super-admin | Tenant route with `X-Freelancer-Id` (no membership) | 200 — scoped to header workspace; `?freelancer_id=` ignored on tenant routes |
+| Regular user | `?freelancer_id=` override on any route | Ignored or 403 |
+| Super-admin | Override on sensitive admin action | `admin_activity_logs` row created |
 
 ---
 
@@ -224,7 +227,7 @@ Use real HTTP + middleware — do not bypass `EnsureFreelancerContext` or global
 | `customer.subscription.updated` | Sync status, plan, dates | — | Forget subscription |
 | `customer.subscription.deleted` | Canceled | — | Forget subscription |
 
-Invalid webhook signature → `400` (do not process payload).
+Invalid webhook signature → `403` via Cashier `VerifyWebhookSignature` middleware (do not process payload).
 
 ### Plan limits (15.11)
 

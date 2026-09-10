@@ -38,6 +38,15 @@ it('documents admin freelancer routes in openapi spec', function () {
     ]);
 });
 
+it('documents member routes in openapi spec', function () {
+    $paths = $this->getJson('/docs/api.json')->json('paths');
+
+    expect($paths)->toHaveKeys([
+        '/members',
+        '/members/{membership}',
+    ]);
+});
+
 it('documents client routes in openapi spec', function () {
     $paths = $this->getJson('/docs/api.json')->json('paths');
 

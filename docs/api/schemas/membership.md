@@ -10,6 +10,7 @@ Links a user to a freelancer workspace.
 | `freelancer_id` | integer | Workspace ID |
 | `user_id` | integer | User ID |
 | `role` | string | `owner`, `admin`, or `member` |
+| `user` | object \| null | Nested [UserResource](./user.md) when loaded |
 | `freelancer` | object \| null | Nested [FreelancerResource](./freelancer.md) when loaded |
 | `created_at` | string | ISO 8601 datetime |
 | `updated_at` | string | ISO 8601 datetime |

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Features\Delivery\Models\Client;
 use App\Features\PlatformBilling\Models\Plan;
 use App\Features\PlatformBilling\Models\Subscription;
+use App\Features\Tenancy\Enums\FreelancerMembershipRole;
 
 it('creates a client for workspace member', function () {
     $this->actingAsTenant()
@@ -37,6 +38,14 @@ it('returns plan limit exceeded when client cap is reached', function () {
         ->postJson($this->apiUrl('clients'), ['name' => 'Over Limit Co'])
         ->assertUnprocessable()
         ->assertJsonPath('code', 'plan_limit_exceeded');
+});
+
+it('denies workspace members from creating clients', function () {
+    $workspace = $this->createTenantWorkspace(role: FreelancerMembershipRole::Member);
+
+    $this->actingAsTenant($workspace['user'], $workspace['freelancer'])
+        ->postJson($this->apiUrl('clients'), ['name' => 'Blocked Client'])
+        ->assertForbidden();
 });
 
 it('denies unauthenticated client creation', function () {

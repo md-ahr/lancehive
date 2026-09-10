@@ -29,6 +29,25 @@ it('throws when the client limit is reached', function () {
         ->toThrow(ApiException::class, 'Client limit reached for your plan.');
 });
 
+it('throws when the team member limit is reached', function () {
+    $freelancer = Freelancer::factory()->active()->create();
+    $plan = Plan::factory()->create(['max_team_members' => 1]);
+    Subscription::factory()->for($freelancer)->for($plan)->active()->create();
+
+    DB::table('freelancer_memberships')->insert([
+        'freelancer_id' => $freelancer->id,
+        'user_id' => $freelancer->owner_user_id,
+        'role' => 'owner',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $service = app(PlanLimitService::class);
+
+    expect(fn () => $service->assertCanAddTeamMember($freelancer->id))
+        ->toThrow(ApiException::class, 'Team member limit reached for your plan.');
+});
+
 it('allows unlimited resources when the plan limit is null', function () {
     $freelancer = Freelancer::factory()->active()->create();
     $plan = Plan::factory()->custom()->create();

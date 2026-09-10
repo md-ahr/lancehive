@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Features\Tenancy\Http\Resources;
 
+use App\Features\Auth\Http\Resources\UserResource;
 use App\Features\Tenancy\Models\FreelancerMembership;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -21,6 +22,9 @@ final class FreelancerMembershipResource extends JsonResource
             'freelancer_id' => $this->freelancer_id,
             'user_id' => $this->user_id,
             'role' => $this->role?->value,
+            'user' => $this->whenLoaded('user', fn () => $this->user !== null
+                ? new UserResource($this->user)
+                : null),
             'freelancer' => $this->whenLoaded('freelancer', fn () => $this->freelancer !== null
                 ? new FreelancerResource($this->freelancer)
                 : null),

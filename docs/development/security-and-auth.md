@@ -89,8 +89,8 @@ Policies live in `app/Features/{Feature}/Policies/`. Call from Form Request `aut
 | Resource | view | create | update | delete | Member restrictions |
 |----------|------|--------|--------|--------|-------------------|
 | Freelancer workspace | member | — | owner/admin | — | Non-member → deny |
-| Client | member | member | member | member (archive) | — |
-| Project | member | member | member | member (soft) | Client must belong to tenant |
+| Client | member | owner/admin | owner/admin | owner/admin (archive) | Member read-only |
+| Project | member | owner/admin | owner/admin | owner/admin (soft) | Member read-only; client must belong to tenant |
 | Task | member | member | member | member (soft) | Project must belong to tenant |
 | TimeLog | member | member | **own only** | **own only** | Admin/owner edits any |
 | ClientInvoice | member | owner/admin | owner/admin | owner/admin (draft) | Member read-only |

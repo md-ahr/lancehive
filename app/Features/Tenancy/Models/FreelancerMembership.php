@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Features\Tenancy\Models;
 
+use App\Core\Tenancy\TenantContext;
 use App\Features\Auth\Models\User;
 use App\Features\Tenancy\Enums\FreelancerMembershipRole;
 use Database\Factories\Tenancy\FreelancerMembershipFactory;
@@ -41,5 +42,21 @@ final class FreelancerMembership extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Scope route binding to the active tenant workspace.
+     */
+    public function resolveRouteBinding($value, $field = null): ?Model
+    {
+        $freelancerId = app(TenantContext::class)->freelancerId();
+
+        if ($freelancerId === null) {
+            return null;
+        }
+
+        return $this->where($field ?? $this->getRouteKeyName(), $value)
+            ->where('freelancer_id', $freelancerId)
+            ->first();
     }
 }

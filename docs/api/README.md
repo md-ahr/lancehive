@@ -32,6 +32,7 @@ Human-readable API contract for the LanceHive MVP (`/api/v1`). This is the **des
 | Authentication | [endpoints/auth.md](./endpoints/auth.md) | login, logout, forgot/reset password | Implemented |
 | Users | [endpoints/users.md](./endpoints/users.md) | `GET /users` | Implemented |
 | Me | [endpoints/me.md](./endpoints/me.md) | `GET /me` | Implemented |
+| Members | [endpoints/members.md](./endpoints/members.md) | `/members/*` | Implemented |
 | Admin — Freelancers | [endpoints/admin-freelancers.md](./endpoints/admin-freelancers.md) | `/admin/freelancers/*` | Implemented |
 | Admin — Plans | [endpoints/admin-plans.md](./endpoints/admin-plans.md) | `/admin/plans/*` | Planned (Phase 15) |
 | Clients | [endpoints/clients.md](./endpoints/clients.md) | `/clients/*` | Implemented |
@@ -63,7 +64,6 @@ Human-readable API contract for the LanceHive MVP (`/api/v1`). This is the **des
 
 ## Post-MVP (not documented here)
 
-- Phase 13 — Freelancer team invites (`POST /members`, etc.)
 - Phase 14 — Client portal (`/portal/*`)
 
 ## Keeping contract and code aligned

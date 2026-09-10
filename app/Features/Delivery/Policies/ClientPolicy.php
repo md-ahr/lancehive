@@ -24,16 +24,16 @@ final class ClientPolicy
 
     public function create(User $user): bool
     {
-        return $this->isMember($user);
+        return $this->membershipFor($user)?->role->canManageClientsAndProjects() ?? false;
     }
 
     public function update(User $user, Client $client): bool
     {
-        return $this->isMember($user);
+        return $this->membershipFor($user)?->role->canManageClientsAndProjects() ?? false;
     }
 
     public function delete(User $user, Client $client): bool
     {
-        return $this->isMember($user);
+        return $this->membershipFor($user)?->role->canManageClientsAndProjects() ?? false;
     }
 }

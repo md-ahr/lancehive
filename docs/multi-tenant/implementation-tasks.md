@@ -1392,11 +1392,11 @@ Phase 12 — Role cleanup (optional) ✅
 [x] 12.2 Map seed users to memberships
 [x] 12.3 Deprecate global role helpers
 
-Phase 13 — Freelancer team
-[ ] 13.1 ClientMembership table stub
-[ ] 13.2 Invite freelancer member
-[ ] 13.3 List/remove workspace members
-[ ] 13.4 Role-based permission tightening
+Phase 13 — Freelancer team ✅
+[x] 13.1 ClientMembership table stub
+[x] 13.2 Invite freelancer member
+[x] 13.3 List/remove workspace members
+[x] 13.4 Role-based permission tightening
 
 Phase 14 — Client portal
 [ ] 14.1 ClientMembership model

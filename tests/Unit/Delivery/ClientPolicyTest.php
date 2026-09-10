@@ -4,29 +4,29 @@ declare(strict_types=1);
 
 use App\Features\Delivery\Models\Client;
 use App\Features\Delivery\Policies\ClientPolicy;
+use App\Features\Tenancy\Enums\FreelancerMembershipRole;
 
-it('allows workspace members to manage clients', function () {
-    $workspace = test()->createTenantWorkspace();
+it('allows members to view clients but not mutate them', function () {
+    $workspace = test()->createTenantWorkspace(role: FreelancerMembershipRole::Member);
     test()->setTenantContext($workspace['freelancer']);
     $client = Client::factory()->for($workspace['freelancer'])->create();
 
     $policy = new ClientPolicy;
 
-    expect($policy->viewAny($workspace['user']))->toBeTrue()
-        ->and($policy->view($workspace['user'], $client))->toBeTrue()
-        ->and($policy->create($workspace['user']))->toBeTrue()
-        ->and($policy->update($workspace['user'], $client))->toBeTrue()
-        ->and($policy->delete($workspace['user'], $client))->toBeTrue();
+    expect($policy->view($workspace['user'], $client))->toBeTrue()
+        ->and($policy->create($workspace['user']))->toBeFalse()
+        ->and($policy->update($workspace['user'], $client))->toBeFalse()
+        ->and($policy->delete($workspace['user'], $client))->toBeFalse();
 });
 
-it('denies non-members', function () {
-    $workspace = test()->createTenantWorkspace();
-    $outsider = test()->createTenantWorkspace()['user'];
-    $client = Client::factory()->for($workspace['freelancer'])->create();
-
+it('allows owners and admins to manage clients', function () {
+    $workspace = test()->createTenantWorkspace(role: FreelancerMembershipRole::Admin);
     test()->setTenantContext($workspace['freelancer']);
+    $client = Client::factory()->for($workspace['freelancer'])->create();
 
     $policy = new ClientPolicy;
 
-    expect($policy->view($outsider, $client))->toBeFalse();
+    expect($policy->create($workspace['user']))->toBeTrue()
+        ->and($policy->update($workspace['user'], $client))->toBeTrue()
+        ->and($policy->delete($workspace['user'], $client))->toBeTrue();
 });

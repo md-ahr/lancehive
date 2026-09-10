@@ -26,7 +26,9 @@ final class ProjectPolicy
 
     public function create(User $user, ?Client $client = null): bool
     {
-        if (! $this->isMember($user)) {
+        $membership = $this->membershipFor($user);
+
+        if (! ($membership?->role->canManageClientsAndProjects() ?? false)) {
             return false;
         }
 
@@ -39,12 +41,12 @@ final class ProjectPolicy
 
     public function update(User $user, Project $project): bool
     {
-        return $this->isMember($user);
+        return $this->membershipFor($user)?->role->canManageClientsAndProjects() ?? false;
     }
 
     public function delete(User $user, Project $project): bool
     {
-        return $this->isMember($user);
+        return $this->membershipFor($user)?->role->canManageClientsAndProjects() ?? false;
     }
 
     private function clientBelongsToTenant(Client $client): bool

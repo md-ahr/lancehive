@@ -27,4 +27,32 @@ enum FreelancerMembershipRole: string
     {
         return in_array($this, [self::Owner, self::Admin], true);
     }
+
+    public function canManageClientsAndProjects(): bool
+    {
+        return in_array($this, [self::Owner, self::Admin], true);
+    }
+
+    public function canManageTeam(): bool
+    {
+        return in_array($this, [self::Owner, self::Admin], true);
+    }
+
+    public function canRemoveMember(self $targetRole): bool
+    {
+        if ($this === self::Owner) {
+            return $targetRole !== self::Owner;
+        }
+
+        if ($this === self::Admin) {
+            return $targetRole === self::Member;
+        }
+
+        return false;
+    }
+
+    public function isInvitable(): bool
+    {
+        return in_array($this, [self::Admin, self::Member], true);
+    }
 }

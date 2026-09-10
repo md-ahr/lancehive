@@ -5,26 +5,31 @@ declare(strict_types=1);
 use App\Features\Delivery\Models\Client;
 use App\Features\Delivery\Models\Project;
 use App\Features\Delivery\Policies\ProjectPolicy;
-use App\Features\Tenancy\Models\Freelancer;
+use App\Features\Tenancy\Enums\FreelancerMembershipRole;
 
-it('allows members to manage tenant projects', function () {
-    $workspace = test()->createTenantWorkspace();
+it('allows members to view projects but not mutate them', function () {
+    $workspace = test()->createTenantWorkspace(role: FreelancerMembershipRole::Member);
     test()->setTenantContext($workspace['freelancer']);
-    $project = Project::factory()->for($workspace['freelancer'])->create();
+    $client = Client::factory()->for($workspace['freelancer'])->create();
+    $project = Project::factory()->for($workspace['freelancer'])->for($client)->create();
 
     $policy = new ProjectPolicy;
 
-    expect($policy->create($workspace['user']))->toBeTrue()
-        ->and($policy->update($workspace['user'], $project))->toBeTrue();
+    expect($policy->view($workspace['user'], $project))->toBeTrue()
+        ->and($policy->create($workspace['user'], $client))->toBeFalse()
+        ->and($policy->update($workspace['user'], $project))->toBeFalse()
+        ->and($policy->delete($workspace['user'], $project))->toBeFalse();
 });
 
-it('denies creating a project for a client outside the tenant', function () {
-    $workspace = test()->createTenantWorkspace();
-    $foreignClient = Client::factory()->for(Freelancer::factory()->active()->create())->create();
-
+it('allows owners and admins to manage projects', function () {
+    $workspace = test()->createTenantWorkspace(role: FreelancerMembershipRole::Admin);
     test()->setTenantContext($workspace['freelancer']);
+    $client = Client::factory()->for($workspace['freelancer'])->create();
+    $project = Project::factory()->for($workspace['freelancer'])->for($client)->create();
 
     $policy = new ProjectPolicy;
 
-    expect($policy->create($workspace['user'], $foreignClient))->toBeFalse();
+    expect($policy->create($workspace['user'], $client))->toBeTrue()
+        ->and($policy->update($workspace['user'], $project))->toBeTrue()
+        ->and($policy->delete($workspace['user'], $project))->toBeTrue();
 });

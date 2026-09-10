@@ -17,4 +17,9 @@ enum ClientMembershipRole: string
     {
         return array_column(self::cases(), 'value');
     }
+
+    public function isInvitable(): bool
+    {
+        return in_array($this, [self::Primary, self::Member, self::Viewer], true);
+    }
 }

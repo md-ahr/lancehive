@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Features\Auth\Enums\UserRole;
 use App\Features\Auth\Models\User;
+use App\Features\ClientPortal\Models\ClientMembership;
+use App\Features\Delivery\Models\Client;
 use App\Features\PlatformBilling\Models\Plan;
 use App\Features\PlatformBilling\Models\Subscription;
 use App\Features\Tenancy\Cache\MembershipCache;
@@ -91,6 +93,8 @@ it('returns memberships active workspace and subscription summary', function () 
             ],
             'active_freelancer' => ['id', 'name', 'slug', 'status'],
             'subscription' => ['status', 'plan_name', 'read_only', 'trial_ends_at'],
+            'client_memberships' => [],
+            'active_client',
         ])
         ->assertJsonPath('memberships.0.freelancer_id', $workspace['freelancer']->id)
         ->assertJsonPath('active_freelancer.id', $workspace['freelancer']->id)
@@ -117,4 +121,35 @@ it('returns null active workspace when user belongs to multiple workspaces witho
         ->assertJsonCount(2, 'memberships')
         ->assertJsonPath('active_freelancer', null)
         ->assertJsonPath('subscription', null);
+});
+
+it('returns client memberships and active client summary', function () {
+    Cache::flush();
+
+    $portal = $this->createClientPortalUser();
+
+    Sanctum::actingAs($portal['user']);
+
+    $this->getJson($this->apiUrl('me'))
+        ->assertOk()
+        ->assertJsonCount(1, 'client_memberships')
+        ->assertJsonPath('client_memberships.0.client_id', $portal['client']->id)
+        ->assertJsonPath('active_client.id', $portal['client']->id)
+        ->assertJsonPath('memberships', []);
+});
+
+it('returns null active client when user belongs to multiple client organizations without header', function () {
+    $user = User::factory()->create();
+    $firstClient = Client::factory()->create();
+    $secondClient = Client::factory()->create();
+
+    ClientMembership::factory()->for($firstClient)->for($user)->create();
+    ClientMembership::factory()->for($secondClient)->for($user)->create();
+
+    Sanctum::actingAs($user);
+
+    $this->getJson($this->apiUrl('me'))
+        ->assertOk()
+        ->assertJsonCount(2, 'client_memberships')
+        ->assertJsonPath('active_client', null);
 });

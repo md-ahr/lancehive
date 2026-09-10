@@ -47,6 +47,8 @@ Returned by enhanced `GET /me` (Phase 9).
 | `memberships` | array | [FreelancerMembershipResource](#freelancermembershipresource)[] |
 | `active_freelancer` | object \| null | [FreelancerResource](./freelancer.md) from `X-Freelancer-Id` |
 | `subscription` | object \| null | Subscription summary (see below) |
+| `client_memberships` | array | [ClientMembershipResource](#clientmembershipresource)[] |
+| `active_client` | object \| null | [ClientResource](./client.md) from `X-Client-Id` |
 
 ### subscription (summary on /me)
 
@@ -56,3 +58,18 @@ Returned by enhanced `GET /me` (Phase 9).
 | `plan_name` | string | Current plan name |
 | `read_only` | boolean | `true` when the workspace subscription blocks writes |
 | `trial_ends_at` | string \| null | ISO 8601 datetime |
+
+## ClientMembershipResource
+
+Links a user to a client organization for portal access.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | integer | Primary key |
+| `client_id` | integer | Client organization ID |
+| `user_id` | integer | User ID |
+| `role` | string | `primary`, `member`, or `viewer` |
+| `user` | object \| null | Nested [UserResource](./user.md) when loaded |
+| `client` | object \| null | Nested [ClientResource](./client.md) when loaded |
+| `created_at` | string | ISO 8601 datetime |
+| `updated_at` | string | ISO 8601 datetime |

@@ -36,7 +36,7 @@ final class ClientMembership extends Model
 
     public function client(): BelongsTo
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(Client::class)->withoutGlobalScope('freelancer');
     }
 
     public function user(): BelongsTo

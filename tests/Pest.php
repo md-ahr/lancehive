@@ -2,6 +2,7 @@
 
 require __DIR__.'/../vendor/autoload.php';
 
+use App\Core\ClientPortal\ClientContext;
 use App\Core\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,4 +14,5 @@ uses(RefreshDatabase::class)->in('Feature', 'Unit');
 
 afterEach(function (): void {
     app(TenantContext::class)->clear();
+    app(ClientContext::class)->clear();
 });

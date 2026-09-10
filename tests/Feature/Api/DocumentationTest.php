@@ -100,3 +100,19 @@ it('documents client invoice routes in openapi spec', function () {
         '/client-invoices/{clientInvoice}/payments',
     ]);
 });
+
+it('documents client member routes in openapi spec', function () {
+    $paths = $this->getJson('/docs/api.json')->json('paths');
+
+    expect($paths)->toHaveKey('/clients/{client}/members');
+});
+
+it('documents client portal routes in openapi spec', function () {
+    $paths = $this->getJson('/docs/api.json')->json('paths');
+
+    expect($paths)->toHaveKeys([
+        '/portal/client',
+        '/portal/projects',
+        '/portal/client-invoices',
+    ]);
+});

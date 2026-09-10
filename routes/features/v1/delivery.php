@@ -1,5 +1,6 @@
 <?php
 
+use App\Features\ClientPortal\Http\Controllers\ClientMemberController;
 use App\Features\Delivery\Http\Controllers\ClientController;
 use App\Features\Delivery\Http\Controllers\ProjectController;
 use App\Features\Delivery\Http\Controllers\TaskController;
@@ -22,6 +23,9 @@ Route::middleware(['auth:sanctum', 'freelancer.context'])
 
         Route::delete('/clients/{client}', [ClientController::class, 'destroy'])
             ->name('clients.destroy');
+
+        Route::post('/clients/{client}/members', [ClientMemberController::class, 'store'])
+            ->name('clients.members.store');
 
         Route::get('/clients/{client}/projects', [ProjectController::class, 'indexForClient'])
             ->name('clients.projects.index');

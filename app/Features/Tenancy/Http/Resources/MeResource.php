@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Features\Tenancy\Http\Resources;
 
 use App\Features\Auth\Http\Resources\UserResource;
+use App\Features\ClientPortal\Http\Resources\ClientMembershipResource;
+use App\Features\Delivery\Http\Resources\ClientResource;
 use App\Features\PlatformBilling\Http\Resources\SubscriptionSummaryResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -24,6 +26,10 @@ final class MeResource extends JsonResource
                 : null,
             'subscription' => $this->resource['subscription'] !== null
                 ? new SubscriptionSummaryResource($this->resource['subscription'])
+                : null,
+            'client_memberships' => ClientMembershipResource::collection($this->resource['client_memberships']),
+            'active_client' => $this->resource['active_client'] !== null
+                ? new ClientResource($this->resource['active_client'])
                 : null,
         ];
     }

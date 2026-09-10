@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Core\ClientPortal\ClientContext;
 use App\Core\Tenancy\TenantContext;
 use App\Features\Auth\Models\User;
 use Dedoc\Scramble\Scramble;
@@ -22,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(TenantContext::class);
+        $this->app->scoped(ClientContext::class);
     }
 
     /**

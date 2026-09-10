@@ -1262,7 +1262,7 @@ Respect **build order** within each PR — e.g. PR 5 must merge invoice items (1
 
 ## Task checklist
 
-Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phases 10–11 seed data docs and tenant isolation tests complete).
+Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 14 client portal complete).
 
 ```
 Phase 0
@@ -1398,12 +1398,12 @@ Phase 13 — Freelancer team ✅
 [x] 13.3 List/remove workspace members
 [x] 13.4 Role-based permission tightening
 
-Phase 14 — Client portal
-[ ] 14.1 ClientMembership model
-[ ] 14.2 EnsureClientContext middleware
-[ ] 14.3 Invite client member
-[ ] 14.4 Portal read API (clients, projects, invoices)
-[ ] 14.5 Enhance /me with client memberships
+Phase 14 — Client portal ✅
+[x] 14.1 ClientMembership model
+[x] 14.2 EnsureClientContext middleware
+[x] 14.3 Invite client member
+[x] 14.4 Portal read API (clients, projects, invoices)
+[x] 14.5 Enhance /me with client memberships
 
 Phase 15 — Platform subscriptions
 [ ] 15.1  Install Cashier / Stripe

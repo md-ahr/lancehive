@@ -13,13 +13,17 @@ use Illuminate\Http\Request;
 
 #[Group('Authentication', weight: 0)]
 #[HeaderParameter('X-Freelancer-Id', description: 'Active freelancer workspace ID (optional — selects active_freelancer and subscription in the response)', required: false)]
+#[HeaderParameter('X-Client-Id', description: 'Active client organization ID (optional — selects active_client in the response)', required: false)]
 final class MeController extends Controller
 {
     public function show(Request $request, MeService $meService): MeResource
     {
-        $header = $request->header('X-Freelancer-Id');
-        $freelancerId = ($header !== null && $header !== '') ? (int) $header : null;
+        $freelancerHeader = $request->header('X-Freelancer-Id');
+        $freelancerId = ($freelancerHeader !== null && $freelancerHeader !== '') ? (int) $freelancerHeader : null;
 
-        return new MeResource($meService->forUser($request->user(), $freelancerId));
+        $clientHeader = $request->header('X-Client-Id');
+        $clientId = ($clientHeader !== null && $clientHeader !== '') ? (int) $clientHeader : null;
+
+        return new MeResource($meService->forUser($request->user(), $freelancerId, $clientId));
     }
 }

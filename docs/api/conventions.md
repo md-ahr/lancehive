@@ -41,6 +41,22 @@ Resolved by `EnsureFreelancerContext` middleware. Super-admins may use `?freelan
 
 Send the same `X-Freelancer-Id` value on every tenant-scoped request after switching workspaces in the client UI.
 
+## Client portal context
+
+Client portal routes require the active client organization header:
+
+```
+X-Client-Id: {client_id}
+```
+
+Resolved by `EnsureClientContext` middleware.
+
+| Context | Header required? | Behavior |
+|---------|------------------|----------|
+| `GET /me` | Optional | When sent, selects `active_client` in the response. Invalid membership → `403 forbidden`. When omitted and the user has exactly one client membership, that organization is auto-selected. |
+| Portal routes (`/portal/*`) | Required when user has multiple client memberships | Sets `ClientContext` for the request. |
+| Single client membership | No | Client organization auto-selected on portal routes and on `GET /me`. |
+
 ## Route groups
 
 | Group | Middleware | Writes when subscription lapsed |

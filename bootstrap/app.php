@@ -2,6 +2,7 @@
 
 use App\Core\Http\Enums\ApiErrorCode;
 use App\Core\Http\Exceptions\ApiException;
+use App\Core\Http\Middleware\EnsureClientContext;
 use App\Core\Http\Middleware\EnsureFreelancerContext;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'freelancer.context' => EnsureFreelancerContext::class,
+            'client.context' => EnsureClientContext::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

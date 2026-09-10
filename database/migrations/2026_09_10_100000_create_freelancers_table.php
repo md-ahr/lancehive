@@ -1,0 +1,28 @@
+<?php
+
+use App\Features\Tenancy\Enums\FreelancerStatus;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('freelancers', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('slug')->unique();
+            $table->string('status')->default(FreelancerStatus::Pending->value);
+            $table->foreignId('owner_user_id')->constrained('users')->cascadeOnDelete();
+            $table->timestamps();
+
+            $table->index('owner_user_id');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('freelancers');
+    }
+};

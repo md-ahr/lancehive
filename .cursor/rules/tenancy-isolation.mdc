@@ -1,0 +1,31 @@
+---
+description: Multi-tenant scoping, policies, and isolation tests
+globs: app/Core/Tenancy/**,app/Core/Http/Middleware/**,app/Features/**/Policies/**,tests/**/*Isolation*
+alwaysApply: false
+---
+
+# Tenancy & Isolation
+
+## Model scoping
+
+- `BelongsToFreelancer` → `Client`, `Project`, `ClientInvoice` (global scope + auto-set `freelancer_id`).
+- `BelongsToTenantViaProject` → `Task`, `TimeLog`, `ClientInvoiceItem`, `ClientInvoicePayment`.
+- **Never** `DB::table()` for tenant data in HTTP layer. **Never** unscoped `Model::query()` in controllers.
+
+## Request context
+
+`TenantContext` holds active `freelancer_id`. Resolved via `EnsureFreelancerContext` middleware (`X-Freelancer-Id` header, membership fallback, super-admin `?freelancer_id=` override).
+
+## Authorization
+
+Policies on every tenant entity. Task/TimeLog: verify project belongs to active tenant. ClientInvoice: block writes when subscription is read-only.
+
+## Billing separation
+
+- **Client billing:** `ClientInvoice*` — freelancer bills client.
+- **Platform billing:** `Plan`, `Subscription`, `SubscriptionCharge` — freelancer pays LanceHive.
+- Never generic `Invoice` / `Payment` class names.
+
+## Isolation tests (required Phase 11+)
+
+For each tenant resource: user A cannot read/write user B's data (404/403). Super-admin override must be tested when applicable.

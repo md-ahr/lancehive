@@ -1,0 +1,42 @@
+---
+description: API URL versioning — /api/v1 prefix and versioned route folders
+globs: routes/**,config/api.php,config/scramble.php,tests/**
+alwaysApply: false
+---
+
+# API Versioning (`/api/v1`)
+
+## Config
+
+- `config/api.php` — `route_version`, `prefix` (`api/v1`), `features_routes` (`routes/features/v1`)
+- `.env` — `API_ROUTE_VERSION=v1` (URL segment; distinct from OpenAPI `API_VERSION` semver)
+
+## Folder rules (what gets versioned)
+
+| Versioned | Not versioned |
+|-----------|---------------|
+| `routes/features/v1/*.php` | `app/Features/{Feature}/` (models, actions, services) |
+| URL prefix `/api/v1` | `database/migrations`, factories, seeders |
+| Scramble `api_path` | `tests/Feature/{Feature}/` — use `$this->apiUrl()` |
+
+**Do not** add `V1/` subfolders under `app/Features/` while only one API version exists.
+
+## Routes
+
+```php
+// routes/api.php
+Route::prefix(config('api.route_version'))->group(function (): void {
+    require config('api.features_routes').'/auth.php';
+    // require config('api.features_routes').'/delivery.php';
+});
+```
+
+New feature route file → `routes/features/v1/{feature}.php`.
+
+## Tests
+
+`$this->apiUrl('login')` → `/api/v1/login`. Never hardcode `/api/` without version.
+
+## v2 later
+
+Add `routes/features/v2/` + second prefix group in `routes/api.php`. Duplicate controllers only when HTTP contract breaks. Freeze v1 files.

@@ -1,0 +1,46 @@
+---
+description: Required unit and feature tests for every implementation task
+globs: tests/**
+alwaysApply: false
+---
+
+# Testing (required per task)
+
+## Rule
+
+Every implementation task from `implementation-tasks.md` ships **all three**:
+
+1. **Unit test** — enum values, model casts/relations, service/action logic without HTTP.
+2. **Feature test** — endpoint auth, validation, happy path, and one failure mode (403/404/422).
+3. **Scramble doc test** — new route appears in `/docs/api.json` `paths` (extend `tests/Feature/Api/DocumentationTest.php` or feature doc test).
+
+Skip none. Do not add tests beyond changed behavior.
+
+## Layout (mirror features — not API version)
+
+No `tests/Feature/V1/` — API version is handled by `$this->apiUrl()`, not test folder paths.
+
+```
+tests/Unit/{Feature}/{Entity}Test.php
+tests/Feature/{Feature}/{Endpoint}Test.php
+tests/Feature/{Feature}/{Entity}IsolationTest.php   # tenant boundaries
+```
+
+## Conventions (match existing suite)
+
+- **Pest** · `it('…')` / `describe()` · `expect()` for value assertions · Laravel HTTP assertions on `$this`
+- `RefreshDatabase` applied via `tests/Pest.php` for `Feature` and `Unit/Auth`
+- `$this->apiUrl('login')` etc. — never hardcode `/api/` without version
+- `postJson` / `getJson` with Sanctum `actingAs($user)`
+- Tenant requests: `withHeader('X-Freelancer-Id', $freelancer->id)`
+- Datasets: `dataset()` + `->with('name')` for parameterized cases
+
+## Run
+
+`vendor/bin/sail artisan make:test --pest {Name}` (add `--unit` for unit tests)
+
+`vendor/bin/sail artisan test --compact tests/Feature/{Feature}/{Name}Test.php`
+
+## Isolation (Phase 11+)
+
+Cross-tenant access must return 404 or 403 — never leak another workspace's data.

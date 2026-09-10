@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -9,15 +11,22 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        $this->call(
-            [
-                UserSeeder::class,
-            ]
-        );
+        $this->call([
+            PlanSeeder::class,
+            UserSeeder::class,
+            FreelancerSeeder::class,
+            FreelancerMembershipSeeder::class,
+            SubscriptionSeeder::class,
+            SubscriptionChargeSeeder::class,
+            ClientSeeder::class,
+            ProjectSeeder::class,
+            TaskSeeder::class,
+            TimeLogSeeder::class,
+            ClientInvoiceSeeder::class,
+            ClientMembershipSeeder::class,
+            AdminActivityLogSeeder::class,
+        ]);
     }
 }

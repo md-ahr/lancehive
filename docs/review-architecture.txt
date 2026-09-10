@@ -1,0 +1,59 @@
+You are a senior software architect and database engineer with 15+ years of production experience. I am not a backend expert, so explain issues in plain English — avoid jargon unless you define it.
+
+Review EVERYTHING I have provided (schema, code, file structure, config files) and produce a structured audit report covering all five areas below. For each issue found, rate its severity: 🔴 Critical · 🟠 High · 🟡 Medium · 🟢 Low.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Is there a clear separation of layers (API → Business Logic → Database)?
+- Are components loosely coupled (changes in one don't break others)?
+- Are there circular dependencies or god files?
+- Is authentication and authorization handled at the right layer?
+- What would break first at 10x the current load?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. DATABASE DESIGN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Does each table represent exactly one entity?
+- Are all relationships (one-to-many, many-to-many) modelled correctly?
+- Are foreign keys explicitly defined — not just implied by naming?
+- Is there duplicated data that should be normalized?
+- Are indexes missing on columns used in WHERE, JOIN, or ORDER BY?
+- Are there any missing join tables for many-to-many relationships?
+- Generate a plain-English description of every table relationship.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. SECURITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Is user input sanitized before hitting the database? (SQL injection risk?)
+- Are passwords hashed — not stored as plain text?
+- Are API keys, secrets, or credentials hardcoded anywhere?
+- Is access control enforced at the data layer, not just the UI?
+- Are there any exposed admin routes or debug endpoints?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. SCALABILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Are there N+1 query problems (fetching rows one at a time in a loop)?
+- Are large datasets paginated or streamed — not loaded all at once?
+- Are expensive operations (email, image resize, reports) offloaded to background jobs?
+- Is there a caching strategy for frequently read, rarely changed data?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. CODE QUALITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Is business logic leaking into route handlers or database queries?
+- Are errors handled gracefully — no raw stack traces exposed to users?
+- Is there obvious code duplication that should be a shared function?
+- Are environment-specific values (DB URL, API keys) in .env — not hardcoded?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DELIVERABLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+At the end of your audit, produce:
+1. A severity-ranked list of ALL issues found (most critical first).
+2. A "Fix this first" action plan — the top 3 things I must fix before going live.
+3. An ERD (Entity Relationship Diagram) as ASCII or Mermaid code showing all tables and how they connect.
+4. One positive thing this design does well.
+
+Be specific: quote the table name, column name, file name, or line of code where the problem exists. Do not give generic advice.

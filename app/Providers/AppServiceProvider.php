@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Models\User;
+use App\Features\Auth\Models\User;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Illuminate\Auth\Notifications\ResetPassword;

@@ -1,0 +1,43 @@
+---
+description: API resources, cursor pagination, and route conventions
+globs: app/Features/**/Http/**,routes/**,app/Core/Pagination/**
+alwaysApply: false
+---
+
+# API Conventions
+
+## Versioning
+
+- All routes: **`/api/v1/...`** — Laravel `api` prefix + `config('api.route_version')` in `routes/api.php`.
+- Route files: **`routes/features/v1/{feature}.php`** via `config('api.features_routes')` — only routes are versioned in folders.
+- `app/Features/` has **no** `V1/` subfolder while a single API version exists.
+- Env: `API_ROUTE_VERSION=v1` · tests use `$this->apiUrl('clients')`.
+- Future `v2`: `routes/features/v2/` + parallel prefix; freeze v1.
+
+## Responses
+
+Eloquent API Resources for all endpoints. Form Requests for validation — no inline `$request->validate()` in controllers.
+
+## Scramble docs (every endpoint)
+
+See `api-scramble-docs.mdc`. Summary: `#[Group]` on controller · Form Request + API Resource return types · assert path in `DocumentationTest` · `/docs/api.json` must list the route.
+
+## Pagination (mandatory for lists)
+
+- `cursorPaginate()` — default `per_page=25`, max `100`. Reject `per_page > 100` with `422`.
+- **Required** for time logs and invoice lists (highest volume).
+- Shared concern in `app/Core/Pagination/` or `Http/Concerns/`.
+
+## Aggregates
+
+`SUM(hours)`, invoice totals via SQL or service methods — **never** load all rows into a Collection.
+
+## Route groups
+
+- Tenant: `auth:sanctum` + `freelancer.context`
+- Admin: `prefix('admin')` + `can:super-admin`
+- Writes when subscription lapses: blocked by `EnsureWritableSubscription` (reads always allowed)
+
+## Caching
+
+Redis in production/Sail (`CACHE_STORE=redis`). Tests use `array` driver (`phpunit.xml`). Cache plans, subscription status, `/me` memberships — not tenant lists or time logs.

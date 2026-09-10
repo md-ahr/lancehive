@@ -1,0 +1,29 @@
+---
+description: PostgreSQL 18 migrations and Laravel 13 schema conventions
+globs: database/migrations/**,database/factories/**
+alwaysApply: false
+---
+
+# PostgreSQL & Migrations
+
+## Database
+
+PostgreSQL 18. Use native features where documented in ERD: partial indexes, `json` columns for metadata.
+
+## Migration rules
+
+- One concern per migration. Anonymous migration classes (Laravel 13 default).
+- FK columns indexed. Composite indexes for tenant list queries — see `docs/multi-tenant/database-erd.md` §8.
+- Partial index example: `time_logs (task_id) WHERE client_invoice_item_id IS NULL`.
+- Money: `decimal(12,2)` totals, `decimal(8,2)` hours. Currency default `BDT` (3-char string).
+- Soft deletes: `deleted_at` on `projects`, `tasks`, `client_invoices`.
+
+## Laravel 13 model patterns
+
+- `casts()` method (not `$casts` property). Constructor promotion for DI.
+- Enum columns cast to backed enums in `app/Features/*/Enums/`.
+- Factories in `database/factories/{Feature}/{Model}Factory.php` with states (`active()`, `draft()`, etc.).
+
+## Before writing schema
+
+Run Boost `database-schema` for existing tables. Cross-check indexes against ERD — do not duplicate FK indexes.

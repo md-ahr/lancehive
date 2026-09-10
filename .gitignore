@@ -6,7 +6,13 @@
 .phpactor.json
 .phpunit.result.cache
 /.codex
-/.cursor/
+# Cursor — commit agent rules & skills; ignore local IDE state
+/.cursor/*
+!/.cursor/rules/
+!/.cursor/skills/
+!/.cursor/rules/**
+!/.cursor/skills/**
+/.claude/
 /.idea
 /.nova
 /.phpunit.cache

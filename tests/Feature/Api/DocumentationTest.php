@@ -1,37 +1,29 @@
 <?php
 
-namespace Tests\Feature\Api;
+declare(strict_types=1);
 
-use Tests\TestCase;
+it('serves interactive docs ui', function () {
+    $this->get('/docs/api')
+        ->assertOk()
+        ->assertSee('elements-api', false)
+        ->assertSee('@stoplight/elements', false);
+});
 
-class DocumentationTest extends TestCase
-{
-    public function test_interactive_docs_ui_is_accessible(): void
-    {
-        $this->get('/docs/api')
-            ->assertOk()
-            ->assertSee('elements-api', false)
-            ->assertSee('@stoplight/elements', false);
-    }
+it('serves openapi spec', function () {
+    $this->getJson('/docs/api.json')
+        ->assertOk()
+        ->assertJsonStructure([
+            'openapi',
+            'info' => ['title', 'version'],
+            'paths',
+        ])
+        ->assertJsonPath('info.title', config('scramble.ui.title'));
+});
 
-    public function test_openapi_spec_is_accessible(): void
-    {
-        $this->getJson('/docs/api.json')
-            ->assertOk()
-            ->assertJsonStructure([
-                'openapi',
-                'info' => ['title', 'version'],
-                'paths',
-            ])
-            ->assertJsonPath('info.title', config('scramble.ui.title'));
-    }
+it('documents authentication routes in openapi spec', function () {
+    $spec = $this->getJson('/docs/api.json')->json();
 
-    public function test_openapi_spec_documents_authentication_routes(): void
-    {
-        $spec = $this->getJson('/docs/api.json')->json();
+    expect($spec['servers'][0]['url'] ?? '')->toEndWith('/'.config('api.prefix', 'api/v1'));
 
-        $this->assertArrayHasKey('/login', $spec['paths']);
-        $this->assertArrayHasKey('/me', $spec['paths']);
-        $this->assertArrayHasKey('/users', $spec['paths']);
-    }
-}
+    expect($spec['paths'])->toHaveKeys(['/login', '/me', '/users']);
+});

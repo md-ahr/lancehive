@@ -1,0 +1,63 @@
+---
+description: Scramble OpenAPI docs — every endpoint must appear in /docs/api.json
+globs: app/Features/**/Http/**,routes/**,tests/Feature/Api/**
+alwaysApply: false
+---
+
+# Scramble API Docs (required per endpoint)
+
+Docs UI: `/docs/api` · OpenAPI: `/docs/api.json` · Package: `dedoc/scramble` · Base: **`/api/v1`**
+
+Route file: `routes/features/v1/{feature}.php` · Controller/Resource: `app/Features/{Feature}/Http/` (no `V1/` subfolder).
+
+## Every new/changed endpoint must
+
+1. Register in `routes/features/v1/{feature}.php`, required from `routes/api.php` via `config('api.features_routes')` (Scramble `api_path` = `config('api.prefix')`).
+2. Use a **Form Request** for body/query validation (Scramble infers request schema).
+3. Return an **API Resource** (or `JsonResource` collection) — not raw arrays/models in controllers.
+4. Add `#[Group('…', weight: N)]` on the controller class.
+
+## Group weights (keep order stable)
+
+| Group | weight |
+|-------|--------|
+| Authentication | 0 |
+| Users | 1 |
+| Admin | 10 |
+| Tenancy | 20 |
+| Clients / Projects / Tasks / Time Logs | 30–40 |
+| Client Invoices | 50 |
+| Subscriptions | 60 |
+
+Use `#[Endpoint(title: '…', description: '…')]` when the method name is not self-explanatory.
+
+## Tenant routes
+
+Class-level header on tenant controllers:
+
+```php
+use Dedoc\Scramble\Attributes\HeaderParameter;
+
+#[HeaderParameter('X-Freelancer-Id', description: 'Active freelancer workspace ID', required: true)]
+#[Group('Clients', weight: 30)]
+```
+
+List endpoints: document `per_page` (max 100) and `cursor` via Form Request or `#[QueryParameter]`.
+
+## Auth
+
+`auth:sanctum` routes are auto-marked bearer-auth (`config/scramble.php` security_strategy). Public routes stay unauthenticated.
+
+## Verify before done
+
+```bash
+vendor/bin/sail artisan test --compact tests/Feature/Api/DocumentationTest.php
+```
+
+Add the new path to `DocumentationTest` (or a feature-scoped doc test) — assert `paths` contains the route.
+
+## Do not
+
+- `#[ExcludeRouteFromDocs]` unless truly internal.
+- Return untyped `response()->json([...])` for new endpoints — blocks accurate response schemas.
+- Skip doc test updates when adding routes.

@@ -20,7 +20,7 @@ return [
      * Multiple includes or wildcards → server defaults to / and paths stay full (/api/users).
      * Override with `servers`, or use Scramble::registerApi() for separate bases.
      */
-    'api_path' => 'api',
+    'api_path' => config('api.prefix', 'api/v1'),
 
     /*
      * Your API domain. By default, app domain is used. This is also a part of the default API routes
@@ -52,7 +52,7 @@ return [
         /*
          * Description rendered on the home page of the API documentation (`/docs/api`).
          */
-        'description' => 'Lancehive REST API. Authenticate with Sanctum bearer tokens returned from the login endpoint.',
+        'description' => 'Lancehive REST API (versioned under /api/v1). Authenticate with Sanctum bearer tokens returned from the login endpoint.',
     ],
 
     'ui' => [

@@ -1,0 +1,45 @@
+---
+description: Feature-based module layout and layer boundaries
+globs: app/Features/**/*
+alwaysApply: false
+---
+
+# Feature Architecture
+
+## Layout
+
+`app/Features/{Feature}/` → `Actions/`, `Services/`, `Http/{Controllers,Requests,Resources}/`, `Models/`, `Enums/`, `Policies/`, `Jobs/`
+
+`app/Core/` — tenancy, pagination, cache, shared middleware. **Core never imports Features.**
+
+## Layers (downward only)
+
+HTTP → Application (Actions/Services) → Domain (Models/Enums/Policies) → Infrastructure (Jobs)
+
+- Controllers: validate via Form Request, delegate to Action/Service, return API Resource.
+- **No** business rules, `DB::table()`, plan limits, or invoice math in controllers.
+
+## Naming
+
+`StoreProjectRequest` · `CreateClientAction` · `ClientInvoiceService` · `ProjectStatus` enum · `final` classes · `declare(strict_types=1);`
+
+## Module imports (mandatory)
+
+| Feature | May import | Must NOT |
+|---------|------------|----------|
+| Auth | Core | other Features |
+| Tenancy | Auth, Core | Delivery, Billing |
+| Delivery | Tenancy, Core | ClientBilling, PlatformBilling |
+| ClientBilling | Delivery, Tenancy, Core | PlatformBilling |
+| PlatformBilling | Tenancy, Core | ClientBilling, Delivery |
+
+## API versioning (folders)
+
+| Versioned | Not versioned |
+|-----------|---------------|
+| `routes/features/v1/{feature}.php` | `app/Features/{Feature}/` — no `V1/` subfolder |
+| `/api/v1` URL prefix | `database/`, `tests/Feature/{Feature}/` |
+
+New endpoint: route file in `routes/features/v1/` → controller in `app/Features/{Feature}/Http/Controllers/`.
+
+Factories/seeders: `database/factories/{Feature}/`, `database/seeders/`.

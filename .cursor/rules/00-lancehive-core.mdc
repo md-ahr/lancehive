@@ -1,0 +1,44 @@
+---
+description: LanceHive core agent guardrails — always on, minimal tokens
+alwaysApply: true
+---
+
+# LanceHive Core
+
+**Stack:** Laravel 13 · PHP 8.3+ · PostgreSQL 18 · Sail · Sanctum API · Pest · API **`/api/v1`**
+
+## Commands (always via Sail)
+
+`vendor/bin/sail artisan …` · `vendor/bin/sail artisan test --compact {path}` · `vendor/bin/sail bin pint --dirty --format agent`
+
+## Architecture (one line)
+
+Feature slices under `app/Features/{Name}/` (not versioned) · route files in `routes/features/v1/` · URLs `/api/v1` via `config/api.php` · tests `tests/Feature/{Name}/` + `$this->apiUrl()`.
+
+## Token guard
+
+1. **Do not** read all of `docs/` — open **one** doc when needed (see table).
+2. **Do not** re-read `AGENTS.md` / `CLAUDE.md` if a scoped `.cursor/rules/*.mdc` already covers the path.
+3. Use Boost MCP (`search-docs`, `database-schema`, `database-query`) before opening migration files or grepping the repo.
+4. For build tasks, read **only** the current task block in `docs/multi-tenant/implementation-tasks.md` via `lancehive-build-task` skill.
+5. Run the **narrowest** test file after each change — never the full suite unless asked.
+
+## Doc index (load on demand)
+
+| Need | File |
+|------|------|
+| Build order / acceptance | `docs/multi-tenant/implementation-tasks.md` |
+| Folder layout / layers | `docs/project-structure/feature-based-architecture.md` |
+| Domain & billing names | `docs/multi-tenant/architecture-overview.md` |
+| Tenant query rules | `docs/multi-tenant/design-rationale-and-scaling.md` |
+| Module imports | `docs/project-structure/feature-based-architecture.md` §6 |
+| Indexes / ERD | `docs/multi-tenant/database-erd.md` |
+| API versioning & folders | `api-versioning.mdc` · `docs/project-structure/feature-based-architecture.md` §8.1 |
+
+## Every task ships tests + API docs
+
+Unit test · feature test · Scramble path assertion in OpenAPI spec. See `testing-required.mdc`, `api-scramble-docs.mdc`, skills below.
+
+## Skills (activate when relevant)
+
+`lancehive-build-task` · `lancehive-architecture` · `lancehive-testing` · `lancehive-api-docs`

@@ -4,6 +4,9 @@ use App\Core\Http\Enums\ApiErrorCode;
 use App\Core\Http\Exceptions\ApiException;
 use App\Core\Http\Middleware\EnsureClientContext;
 use App\Core\Http\Middleware\EnsureFreelancerContext;
+use App\Core\Http\Middleware\EnsureWritableSubscription;
+use App\Features\PlatformBilling\Console\NotifyTrialEndingCommand;
+use App\Features\PlatformBilling\Console\SyncPlansWithStripeCommand;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -13,6 +16,10 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
+    ->withCommands([
+        SyncPlansWithStripeCommand::class,
+        NotifyTrialEndingCommand::class,
+    ])
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
@@ -23,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'freelancer.context' => EnsureFreelancerContext::class,
             'client.context' => EnsureClientContext::class,
+            'writable.subscription' => EnsureWritableSubscription::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

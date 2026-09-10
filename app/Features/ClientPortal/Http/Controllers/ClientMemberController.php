@@ -30,23 +30,22 @@ final class ClientMemberController extends Controller
     {
         $validated = $request->validated();
         $email = strtolower($validated['email']);
-        $existingUser = User::query()->where('email', $email)->exists();
 
-        $membership = $this->inviteService->invite($client, [
+        $result = $this->inviteService->invite($client, [
             'name' => $validated['name'],
             'email' => $email,
             'role' => ClientMembershipRole::from($validated['role']),
         ]);
 
-        $user = $membership->user;
+        $user = $result->membership->user;
 
-        if ($existingUser) {
-            $user->notify(new ClientPortalMemberAddedNotification($client));
-        } else {
+        if ($result->createdNewUser) {
             $this->sendNewUserInvite($client, $user);
+        } else {
+            $user->notify(new ClientPortalMemberAddedNotification($client));
         }
 
-        return (new ClientMembershipResource($membership))
+        return (new ClientMembershipResource($result->membership))
             ->response()
             ->setStatusCode(201);
     }

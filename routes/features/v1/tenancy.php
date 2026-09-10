@@ -8,9 +8,11 @@ Route::middleware(['auth:sanctum', 'freelancer.context'])
         Route::get('/members', [MemberController::class, 'index'])
             ->name('members.index');
 
-        Route::post('/members', [MemberController::class, 'store'])
-            ->name('members.store');
+        Route::middleware('writable.subscription')->group(function (): void {
+            Route::post('/members', [MemberController::class, 'store'])
+                ->name('members.store');
 
-        Route::delete('/members/{membership}', [MemberController::class, 'destroy'])
-            ->name('members.destroy');
+            Route::delete('/members/{membership}', [MemberController::class, 'destroy'])
+                ->name('members.destroy');
+        });
     });

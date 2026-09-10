@@ -1262,7 +1262,7 @@ Respect **build order** within each PR — e.g. PR 5 must merge invoice items (1
 
 ## Task checklist
 
-Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 14 client portal complete).
+Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 15 platform subscriptions complete).
 
 ```
 Phase 0
@@ -1405,21 +1405,21 @@ Phase 14 — Client portal ✅
 [x] 14.4 Portal read API (clients, projects, invoices)
 [x] 14.5 Enhance /me with client memberships
 
-Phase 15 — Platform subscriptions
-[ ] 15.1  Install Cashier / Stripe
-[ ] 15.2  Sync plans with Stripe prices
-[ ] 15.3  Admin plan CRUD
-[ ] 15.4  SubscriptionService
-[ ] 15.5  GET /subscription
-[ ] 15.6  POST /subscription/checkout
-[ ] 15.7  POST /subscription/swap
-[ ] 15.8  POST /subscription/cancel
-[ ] 15.9  Stripe webhooks
-[ ] 15.10 EnsureWritableSubscription middleware (read-only mode)
-[ ] 15.11 Plan limit hardening (lockForUpdate)
-[ ] 15.12 Admin assign custom plan
-[ ] 15.13 Subscription emails
-[ ] 15.14 Subscription tests
+Phase 15 — Platform subscriptions ✅
+[x] 15.1  Install Cashier / Stripe
+[x] 15.2  Sync plans with Stripe prices
+[x] 15.3  Admin plan CRUD
+[x] 15.4  SubscriptionService
+[x] 15.5  GET /subscription
+[x] 15.6  POST /subscription/checkout
+[x] 15.7  POST /subscription/swap
+[x] 15.8  POST /subscription/cancel
+[x] 15.9  Stripe webhooks
+[x] 15.10 EnsureWritableSubscription middleware (read-only mode)
+[x] 15.11 Plan limit hardening (lockForUpdate)
+[x] 15.12 Admin assign custom plan
+[x] 15.13 Subscription emails
+[x] 15.14 Subscription tests
 
 Phase 16 — Future
 [ ] 16.x Platform growth

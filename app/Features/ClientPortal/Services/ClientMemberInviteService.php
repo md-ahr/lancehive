@@ -25,11 +25,12 @@ final class ClientMemberInviteService
      *     role: ClientMembershipRole
      * }  $data
      */
-    public function invite(Client $client, array $data): ClientMembership
+    public function invite(Client $client, array $data): ClientMemberInviteResult
     {
-        return DB::transaction(function () use ($client, $data): ClientMembership {
+        return DB::transaction(function () use ($client, $data): ClientMemberInviteResult {
             $email = Str::lower($data['email']);
             $user = User::query()->where('email', $email)->first();
+            $createdNewUser = false;
 
             if ($user !== null) {
                 $existingMembership = ClientMembership::query()
@@ -49,6 +50,7 @@ final class ClientMemberInviteService
                     'password' => Str::password(),
                     'role' => UserRole::User,
                 ]);
+                $createdNewUser = true;
             }
 
             $membership = ClientMembership::query()->create([
@@ -59,7 +61,7 @@ final class ClientMemberInviteService
 
             $this->membershipCache->forget($user->id);
 
-            return $membership->load('user');
+            return new ClientMemberInviteResult($membership->load('user'), $createdNewUser);
         });
     }
 }

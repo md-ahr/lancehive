@@ -5,6 +5,9 @@ namespace App\Providers;
 use App\Core\ClientPortal\ClientContext;
 use App\Core\Tenancy\TenantContext;
 use App\Features\Auth\Models\User;
+use App\Features\PlatformBilling\Contracts\StripeGateway;
+use App\Features\PlatformBilling\Services\StripeCashierGateway;
+use App\Features\Tenancy\Models\Freelancer;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -14,6 +17,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Cashier\Cashier;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->scoped(TenantContext::class);
         $this->app->scoped(ClientContext::class);
+        $this->app->singleton(StripeGateway::class, StripeCashierGateway::class);
     }
 
     /**
@@ -60,5 +65,7 @@ class AppServiceProvider extends ServiceProvider
             });
 
         Gate::define('viewApiDocs', fn (?User $user = null) => app()->environment(['local', 'testing']));
+
+        Cashier::useCustomerModel(Freelancer::class);
     }
 }

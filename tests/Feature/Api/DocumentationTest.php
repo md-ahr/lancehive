@@ -116,3 +116,25 @@ it('documents client portal routes in openapi spec', function () {
         '/portal/client-invoices',
     ]);
 });
+
+it('documents subscription routes in openapi spec', function () {
+    $paths = $this->getJson('/docs/api.json')->json('paths');
+
+    expect($paths)->toHaveKeys([
+        '/subscription',
+        '/subscription/checkout',
+        '/subscription/swap',
+        '/subscription/cancel',
+        '/webhooks/stripe',
+    ]);
+});
+
+it('documents admin plan routes in openapi spec', function () {
+    $paths = $this->getJson('/docs/api.json')->json('paths');
+
+    expect($paths)->toHaveKeys([
+        '/admin/plans',
+        '/admin/plans/{plan}',
+        '/admin/freelancers/{freelancer}/subscription',
+    ]);
+});

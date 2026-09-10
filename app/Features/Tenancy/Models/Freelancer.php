@@ -18,12 +18,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Laravel\Cashier\Billable;
 
 #[Fillable(['name', 'slug', 'status', 'owner_user_id'])]
 final class Freelancer extends Model
 {
     /** @use HasFactory<FreelancerFactory> */
-    use HasFactory;
+    use Billable, HasFactory;
 
     /**
      * @return array<string, string>

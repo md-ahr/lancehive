@@ -6,62 +6,70 @@ namespace App\Features\PlatformBilling\Services;
 
 use App\Core\Http\Enums\ApiErrorCode;
 use App\Core\Http\Exceptions\ApiException;
-use App\Features\PlatformBilling\Cache\SubscriptionCache;
+use App\Features\PlatformBilling\Models\Subscription;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 final class PlanLimitService
 {
-    public function __construct(private SubscriptionCache $subscriptionCache) {}
-
     public function assertCanAddClient(int $freelancerId): void
     {
-        $limit = $this->subscriptionCache->forFreelancer($freelancerId)?->plan?->max_clients;
-
-        if ($limit === null) {
-            return;
-        }
-
-        $count = DB::table('clients')
-            ->where('freelancer_id', $freelancerId)
-            ->count();
-
-        if ($count >= $limit) {
-            throw new ApiException(ApiErrorCode::PlanLimitExceeded, 'Client limit reached for your plan.');
-        }
+        $this->assertWithinLimit($freelancerId, 'clients', 'max_clients', 'Client limit reached for your plan.');
     }
 
     public function assertCanAddProject(int $freelancerId): void
     {
-        $limit = $this->subscriptionCache->forFreelancer($freelancerId)?->plan?->max_projects;
-
-        if ($limit === null) {
-            return;
-        }
-
-        $count = DB::table('projects')
-            ->where('freelancer_id', $freelancerId)
-            ->whereNull('deleted_at')
-            ->count();
-
-        if ($count >= $limit) {
-            throw new ApiException(ApiErrorCode::PlanLimitExceeded, 'Project limit reached for your plan.');
-        }
+        $this->assertWithinLimit(
+            $freelancerId,
+            'projects',
+            'max_projects',
+            'Project limit reached for your plan.',
+            static fn ($query) => $query->whereNull('deleted_at'),
+        );
     }
 
     public function assertCanAddTeamMember(int $freelancerId): void
     {
-        $limit = $this->subscriptionCache->forFreelancer($freelancerId)?->plan?->max_team_members;
+        $this->assertWithinLimit(
+            $freelancerId,
+            'freelancer_memberships',
+            'max_team_members',
+            'Team member limit reached for your plan.',
+        );
+    }
 
-        if ($limit === null) {
-            return;
-        }
+    /**
+     * @param  (callable(Builder): Builder)|null  $constraint
+     */
+    private function assertWithinLimit(
+        int $freelancerId,
+        string $table,
+        string $limitColumn,
+        string $message,
+        ?callable $constraint = null,
+    ): void {
+        DB::transaction(function () use ($freelancerId, $table, $limitColumn, $message, $constraint): void {
+            $subscription = Subscription::query()
+                ->with('plan')
+                ->where('freelancer_id', $freelancerId)
+                ->lockForUpdate()
+                ->first();
 
-        $count = DB::table('freelancer_memberships')
-            ->where('freelancer_id', $freelancerId)
-            ->count();
+            $limit = $subscription?->plan?->{$limitColumn};
 
-        if ($count >= $limit) {
-            throw new ApiException(ApiErrorCode::PlanLimitExceeded, 'Team member limit reached for your plan.');
-        }
+            if ($limit === null) {
+                return;
+            }
+
+            $query = DB::table($table)->where('freelancer_id', $freelancerId);
+
+            if ($constraint !== null) {
+                $query = $constraint($query);
+            }
+
+            if ($query->count() >= $limit) {
+                throw new ApiException(ApiErrorCode::PlanLimitExceeded, $message);
+            }
+        });
     }
 }

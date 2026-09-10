@@ -5,13 +5,22 @@ namespace Tests;
 use App\Core\ClientPortal\ClientContext;
 use App\Core\Tenancy\TenantContext;
 use App\Features\Delivery\Models\Client;
+use App\Features\PlatformBilling\Contracts\StripeGateway;
 use App\Features\Tenancy\Models\Freelancer;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Tests\Concerns\ActsAsTenant;
+use Tests\Support\FakeStripeGateway;
 
 abstract class TestCase extends BaseTestCase
 {
     use ActsAsTenant;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app->instance(StripeGateway::class, new FakeStripeGateway);
+    }
 
     protected function setTenantContext(Freelancer|int $freelancer): void
     {

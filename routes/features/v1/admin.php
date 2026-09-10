@@ -1,6 +1,8 @@
 <?php
 
 use App\Features\Admin\Http\Controllers\FreelancerController;
+use App\Features\Admin\Http\Controllers\FreelancerSubscriptionController;
+use App\Features\Admin\Http\Controllers\PlanController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')
@@ -20,4 +22,16 @@ Route::prefix('admin')
 
         Route::post('/freelancers/{freelancer}/resend-invite', [FreelancerController::class, 'resendInvite'])
             ->name('admin.freelancers.resend-invite');
+
+        Route::patch('/freelancers/{freelancer}/subscription', [FreelancerSubscriptionController::class, 'update'])
+            ->name('admin.freelancers.subscription.update');
+
+        Route::get('/plans', [PlanController::class, 'index'])
+            ->name('admin.plans.index');
+
+        Route::post('/plans', [PlanController::class, 'store'])
+            ->name('admin.plans.store');
+
+        Route::patch('/plans/{plan}', [PlanController::class, 'update'])
+            ->name('admin.plans.update');
     });

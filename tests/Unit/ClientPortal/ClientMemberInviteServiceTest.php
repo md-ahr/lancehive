@@ -13,15 +13,32 @@ it('creates a client membership for a new user', function () {
     $client = Client::factory()->create();
     $service = app(ClientMemberInviteService::class);
 
-    $membership = $service->invite($client, [
+    $result = $service->invite($client, [
         'name' => 'Portal User',
         'email' => 'portal.user@client.test',
         'role' => ClientMembershipRole::Viewer,
     ]);
 
-    expect($membership->client_id)->toBe($client->id)
-        ->and($membership->role)->toBe(ClientMembershipRole::Viewer)
+    expect($result->createdNewUser)->toBeTrue()
+        ->and($result->membership->client_id)->toBe($client->id)
+        ->and($result->membership->role)->toBe(ClientMembershipRole::Viewer)
         ->and(User::query()->where('email', 'portal.user@client.test')->exists())->toBeTrue();
+});
+
+it('reuses an existing user without creating a new account', function () {
+    $client = Client::factory()->create();
+    $user = User::factory()->create(['email' => 'existing@client.test']);
+    $service = app(ClientMemberInviteService::class);
+
+    $result = $service->invite($client, [
+        'name' => 'Ignored Name',
+        'email' => 'existing@client.test',
+        'role' => ClientMembershipRole::Primary,
+    ]);
+
+    expect($result->createdNewUser)->toBeFalse()
+        ->and($result->membership->user_id)->toBe($user->id)
+        ->and(User::query()->where('email', 'existing@client.test')->count())->toBe(1);
 });
 
 it('rejects duplicate client memberships', function () {

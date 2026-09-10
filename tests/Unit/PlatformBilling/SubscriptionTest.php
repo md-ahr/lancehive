@@ -32,3 +32,36 @@ it('enforces one subscription per freelancer', function () {
         'freelancer_id' => $subscription->freelancer_id,
     ]))->toThrow(QueryException::class);
 });
+
+it('returns calendar days remaining until trial end', function () {
+    $this->travelTo(now()->startOfDay());
+
+    $subscription = Subscription::factory()->make([
+        'status' => SubscriptionStatus::Trialing,
+        'trial_ends_at' => now()->addDays(3)->endOfDay(),
+    ]);
+
+    expect($subscription->daysRemaining())->toBe(3);
+});
+
+it('returns zero days remaining after trial end', function () {
+    $this->travelTo(now()->startOfDay());
+
+    $subscription = Subscription::factory()->make([
+        'status' => SubscriptionStatus::Trialing,
+        'trial_ends_at' => now()->subDay()->endOfDay(),
+    ]);
+
+    expect($subscription->daysRemaining())->toBe(0);
+});
+
+it('returns calendar days remaining until billing period end', function () {
+    $this->travelTo(now()->startOfDay());
+
+    $subscription = Subscription::factory()->make([
+        'status' => SubscriptionStatus::Active,
+        'current_period_end' => now()->addDays(5)->endOfDay(),
+    ]);
+
+    expect($subscription->daysRemaining())->toBe(5);
+});

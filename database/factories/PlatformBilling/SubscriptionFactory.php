@@ -57,4 +57,12 @@ class SubscriptionFactory extends Factory
             'read_only_at' => now(),
         ]);
     }
+
+    public function expiredTrial(): static
+    {
+        return $this->state(fn () => [
+            'status' => SubscriptionStatus::Trialing,
+            'trial_ends_at' => now()->subDay(),
+        ]);
+    }
 }

@@ -92,6 +92,45 @@ final class Subscription extends Model
 
     public function canWrite(): bool
     {
-        return $this->status?->canWrite() ?? false;
+        return $this->allowsWrites();
+    }
+
+    public function allowsWrites(): bool
+    {
+        if ($this->status === null) {
+            return false;
+        }
+
+        if ($this->status === SubscriptionStatus::Trialing) {
+            return $this->trial_ends_at?->isFuture() ?? false;
+        }
+
+        if ($this->status === SubscriptionStatus::Canceled) {
+            return $this->current_period_end?->isFuture() ?? false;
+        }
+
+        return $this->status->canWrite();
+    }
+
+    public function daysRemaining(): ?int
+    {
+        $endDate = match ($this->status) {
+            SubscriptionStatus::Trialing => $this->trial_ends_at,
+            SubscriptionStatus::Active, SubscriptionStatus::PastDue, SubscriptionStatus::Canceled => $this->current_period_end,
+            default => null,
+        };
+
+        if ($endDate === null) {
+            return null;
+        }
+
+        $today = now()->startOfDay();
+        $endDay = $endDate->copy()->startOfDay();
+
+        if ($endDay->lessThan($today)) {
+            return 0;
+        }
+
+        return (int) $today->diffInDays($endDay);
     }
 }

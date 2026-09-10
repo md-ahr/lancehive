@@ -227,7 +227,6 @@ Track in [implementation-tasks.md](./implementation-tasks.md):
 - [ ] **Task 3.10** — `admin_activity_logs` for super-admin tenant override
 - [ ] **Task 15.11** — `PlanLimitService` with transaction + `lockForUpdate`
 - [ ] Enforce `ClientInvoiceService` as sole owner of totals + billing link to `time_logs`
-- [ ] Add partial index migration for unbilled `time_logs` (PostgreSQL)
 
 Full weakness → mitigation matrix: [design-rationale-and-scaling.md §3](./design-rationale-and-scaling.md#3-known-weaknesses--mitigations).
 

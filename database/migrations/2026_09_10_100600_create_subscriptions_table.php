@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('provider_subscription_id')->nullable();
             $table->timestamps();
 
+            $table->index('plan_id');
             $table->index('provider_subscription_id');
         });
     }

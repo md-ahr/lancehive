@@ -91,7 +91,7 @@ Build tables and models one at a time. No API yet.
 | Migration | `migrate:fresh` succeeds; FKs, indexes, uniques present | Covered by model tests |
 | Model | Relations, factory (+ states), helpers per task **Actions** | Unit: relations, casts, factory |
 | Invoice math (1.22) | Totals recalc from items; full payment sets `paid_at` | Unit: math + payment |
-| Indexes (1.28) | ERD §8 indexes + partial unbilled time-log index | `EXPLAIN` uses index scan |
+| Indexes (1.28) | ERD §8 indexes (FK + composite; no redundant left-prefix duplicates) | `EXPLAIN` uses index scan |
 
 **Edge cases (Phase 1):** unique constraint violations; nullable columns; `null` plan limits = unlimited; one subscription per freelancer.
 

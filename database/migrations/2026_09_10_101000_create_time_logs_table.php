@@ -22,6 +22,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['task_id', 'user_id']);
+            $table->index('user_id');
             $table->index('logged_at');
             $table->index('client_invoice_item_id');
         });

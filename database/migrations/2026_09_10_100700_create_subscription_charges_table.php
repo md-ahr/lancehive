@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('provider_charge_id')->nullable()->unique();
             $table->timestamps();
 
-            $table->index('subscription_id');
             $table->index(['subscription_id', 'status']);
         });
     }

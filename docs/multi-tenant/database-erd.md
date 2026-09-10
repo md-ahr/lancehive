@@ -759,16 +759,15 @@ Required indexes for filter/search/join paths. See [architecture-review.md](./ar
 | `freelancer_memberships` | `(freelancer_id, user_id)` | UNIQUE | Membership |
 | `freelancer_memberships` | `user_id` | INDEX | `/me` workspace list |
 | `freelancer_memberships` | `(freelancer_id, role)` | INDEX | Admin/owner lists |
-| `clients` | `freelancer_id` | INDEX | Tenant client list |
-| `clients` | `(freelancer_id, status)` | INDEX | Active/archived filter |
+| `clients` | `(freelancer_id, status)` | INDEX | Tenant client list; active/archived filter |
 | `projects` | `(freelancer_id, client_id)` | INDEX | Scoped project list |
 | `projects` | `(freelancer_id, status)` | INDEX | Dashboard filters |
 | `projects` | `client_id` | INDEX | Client detail page |
 | `tasks` | `project_id` | INDEX | Tasks per project |
-| `time_logs` | `(task_id, user_id)` | INDEX | Task/user queries |
+| `time_logs` | `(task_id, user_id)` | INDEX | Task/user and unbilled task lookups |
+| `time_logs` | `user_id` | INDEX | FK cascades; user-scoped log lists |
 | `time_logs` | `logged_at` | INDEX | Date-range lists; future archive job |
 | `time_logs` | `client_invoice_item_id` | INDEX | Billed log lookup |
-| `time_logs` | `(task_id)` WHERE `client_invoice_item_id IS NULL` | PARTIAL | Unbilled hours (PostgreSQL) |
 | `client_invoices` | `(freelancer_id, invoice_number)` | UNIQUE | Invoice identity |
 | `client_invoices` | `project_id` | INDEX | Project invoices |
 | `client_invoices` | `(freelancer_id, status)` | INDEX | Invoice filters |
@@ -777,10 +776,11 @@ Required indexes for filter/search/join paths. See [architecture-review.md](./ar
 | `client_invoice_payments` | `client_invoice_id` | INDEX | Payment sums |
 | `plans` | `slug` | UNIQUE | Plan lookup |
 | `subscriptions` | `freelancer_id` | UNIQUE | One sub per workspace |
+| `subscriptions` | `plan_id` | INDEX | Plan FK joins and cascades |
 | `subscriptions` | `provider_subscription_id` | INDEX | Stripe webhooks |
-| `subscription_charges` | `subscription_id` | INDEX | Charge history |
-| `subscription_charges` | `(subscription_id, status)` | INDEX | Paid/failed filters |
+| `subscription_charges` | `(subscription_id, status)` | INDEX | Charge history; paid/failed filters |
 | `subscription_charges` | `provider_charge_id` | UNIQUE | Webhook idempotency |
 | `client_memberships` | `(client_id, user_id)` | UNIQUE | Portal access |
+| `client_memberships` | `user_id` | INDEX | User portal membership lists |
 
 **Note:** Laravel adds indexes on foreign keys by default in migrations — still declare explicitly in migration files for reviewability.

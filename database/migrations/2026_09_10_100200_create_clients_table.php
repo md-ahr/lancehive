@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('contact_email')->nullable();
             $table->timestamps();
 
-            $table->index('freelancer_id');
             $table->index(['freelancer_id', 'status']);
         });
     }

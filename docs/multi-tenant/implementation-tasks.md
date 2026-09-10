@@ -1262,7 +1262,7 @@ Respect **build order** within each PR — e.g. PR 5 must merge invoice items (1
 
 ## Task checklist
 
-Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 5 project management complete).
+Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-10 (Phase 6 task management complete).
 
 ```
 Phase 0
@@ -1345,12 +1345,12 @@ Phase 5 — Projects ✅
 [x] 5.7  Soft-delete project (DELETE /projects/{id})
 
 Phase 6 — Tasks
-[ ] 6.1  Task API resource
-[ ] 6.2  Create task (POST /projects/{project}/tasks)
-[ ] 6.3  List project tasks (GET /projects/{project}/tasks)
-[ ] 6.4  Show task (GET /tasks/{id})
-[ ] 6.5  Update task (PATCH /tasks/{id})
-[ ] 6.6  Soft-delete task (DELETE /tasks/{id})
+[x] 6.1  Task API resource
+[x] 6.2  Create task (POST /projects/{project}/tasks)
+[x] 6.3  List project tasks (GET /projects/{project}/tasks)
+[x] 6.4  Show task (GET /tasks/{id})
+[x] 6.5  Update task (PATCH /tasks/{id})
+[x] 6.6  Soft-delete task (DELETE /tasks/{id})
 
 Phase 7 — Time logs
 [ ] 7.1  TimeLog API resource

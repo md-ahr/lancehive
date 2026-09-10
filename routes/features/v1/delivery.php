@@ -2,6 +2,7 @@
 
 use App\Features\Delivery\Http\Controllers\ClientController;
 use App\Features\Delivery\Http\Controllers\ProjectController;
+use App\Features\Delivery\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'freelancer.context'])
@@ -38,4 +39,19 @@ Route::middleware(['auth:sanctum', 'freelancer.context'])
 
         Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])
             ->name('projects.destroy');
+
+        Route::get('/projects/{project}/tasks', [TaskController::class, 'indexForProject'])
+            ->name('projects.tasks.index');
+
+        Route::post('/projects/{project}/tasks', [TaskController::class, 'store'])
+            ->name('projects.tasks.store');
+
+        Route::get('/tasks/{task}', [TaskController::class, 'show'])
+            ->name('tasks.show');
+
+        Route::patch('/tasks/{task}', [TaskController::class, 'update'])
+            ->name('tasks.update');
+
+        Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])
+            ->name('tasks.destroy');
     });

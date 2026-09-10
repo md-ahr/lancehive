@@ -35,7 +35,8 @@ description: Use when implementing a task from docs/multi-tenant/implementation-
 | 10 | Seeders |
 | 11 | Tenant isolation tests (critical) |
 | 15 | Stripe subscriptions, read-only mode, plan limits |
-| 18 | User, workspace, and platform settings (three scopes) |
+| Phase 18 | User, workspace, and platform settings (three scopes) |
+| 19 | Reporting — workspace/platform stats, saved reports, async CSV exports |
 
 ## PR grouping
 

@@ -711,7 +711,8 @@ Seeded on migrate. Super-admin editable via `PATCH /admin/settings`. Cached via 
 ┌─────────────────────────────────────────────────────────────────┐
 │  PLATFORM (no freelancer_id)                                    │
 │  users · personal_access_tokens · password_reset_tokens         │
-│  plans · sessions                                               │
+│  plans · sessions · platform_settings                           │
+│  saved_reports (freelancer_id NULL) · report_exports (NULL)     │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
@@ -719,6 +720,7 @@ Seeded on migrate. Super-admin editable via `PATCH /admin/settings`. Cached via 
 │  freelancers ── subscriptions ── subscription_charges           │
 │       │              └── plans                                  │
 │       ├── freelancer_memberships ── users                       │
+│       ├── saved_reports · report_exports (Phase 19)             │
 │       └── clients ── client_memberships (Phase 14) ── users     │
 └─────────────────────────────────────────────────────────────────┘
 
@@ -743,7 +745,9 @@ Seeded on migrate. Super-admin editable via `PATCH /admin/settings`. Cached via 
 | Platform billing | 3 | Planned |
 | Client portal | 1 | Planned (Phase 14) |
 | Admin audit | 1 | Planned (Task 3.10) |
-| **Total domain** | **14 planned** + **4 existing** | |
+| Settings | 1 | Implemented (Phase 18 — `platform_settings`) |
+| Reporting | 2 | Planned (Phase 19 — `saved_reports`, `report_exports`) |
+| **Total domain** | **16 planned** + **4 existing** | |
 
 ---
 
@@ -782,5 +786,10 @@ Required indexes for filter/search/join paths. See [architecture-review.md](./ar
 | `subscription_charges` | `provider_charge_id` | UNIQUE | Webhook idempotency |
 | `client_memberships` | `(client_id, user_id)` | UNIQUE | Portal access |
 | `client_memberships` | `user_id` | INDEX | User portal membership lists |
+| `saved_reports` | `(freelancer_id, created_by_user_id)` | INDEX | Tenant saved report list |
+| `saved_reports` | `created_by_user_id` | INDEX | User's saved reports |
+| `report_exports` | `(freelancer_id, requested_by_user_id, status)` | INDEX | Export list and status filter |
+| `report_exports` | `expires_at` | INDEX | Purge job |
+| `report_exports` | `saved_report_id` | INDEX | Export from saved report |
 
 **Note:** Laravel adds indexes on foreign keys by default in migrations — still declare explicitly in migration files for reviewability.

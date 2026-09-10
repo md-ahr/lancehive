@@ -99,7 +99,7 @@ All list endpoints return paginated results. See [architecture-overview.md § AP
 ### 4.3 Background work
 
 - Cron-style work (`MarkOverdueClientInvoices`, subscription sync side effects) → **queued jobs**, not inline in HTTP requests.
-- Future report exports → job + notification pattern from day one (even if report is simple).
+- Future report exports → **Phase 19** (`GenerateReportExportJob` + notification); Phase 17 adds scale hardening (read replica, archive).
 
 ### 4.4 API versioning (folders)
 

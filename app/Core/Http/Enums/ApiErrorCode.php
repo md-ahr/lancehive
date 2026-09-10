@@ -14,6 +14,7 @@ enum ApiErrorCode: string
     case PlanLimitExceeded = 'plan_limit_exceeded';
     case InvoiceNotEditable = 'invoice_not_editable';
     case TooManyRequests = 'too_many_requests';
+    case ExportExpired = 'export_expired';
 
     public function httpStatus(): int
     {
@@ -21,6 +22,7 @@ enum ApiErrorCode: string
             self::Unauthenticated => 401,
             self::Forbidden, self::WorkspaceReadOnly, self::SuperAdminRequired => 403,
             self::NotFound => 404,
+            self::ExportExpired => 410,
             self::PlanLimitExceeded, self::InvoiceNotEditable => 422,
             self::TooManyRequests => 429,
         };

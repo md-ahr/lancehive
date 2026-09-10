@@ -342,8 +342,9 @@ flowchart BT
 | Admin | All features **via HTTP-facing services only** | — |
 | ClientPortal | Tenancy, Delivery (read), Core | ClientBilling writes, PlatformBilling |
 | Settings | Auth, Tenancy, Core | Delivery, ClientBilling, PlatformBilling |
+| Reporting | Delivery, ClientBilling, Tenancy, PlatformBilling, Auth, Core | — (read-only queries; no cross-feature writes) |
 
-**Enforcement tips:**
+**Reporting note:** `ReportQueryService` may query Delivery/ClientBilling/PlatformBilling models with existing global scopes. Do not mutate foreign feature state from Reporting jobs except export file I/O.
 
 - Prefer **constructor injection** of services from allowed modules only.
 - Do not call another feature's **Models** directly from a foreign Service — expose an Action or query method in the owning feature.

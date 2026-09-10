@@ -102,6 +102,32 @@ Detail: [docs/api/endpoints/settings.md](../api/endpoints/settings.md) · [schem
 
 ---
 
+## Reporting model (Phase 19)
+
+Two scopes: **workspace** (freelancer tenant) and **platform** (super-admin). Sync dashboard stats in HTTP; filtered reports return summary + cursor preview; CSV exports async via queue.
+
+| Scope | Storage | API prefix | Who reads | Who writes (save/export) |
+|-------|---------|------------|-----------|--------------------------|
+| **Workspace** | `saved_reports.freelancer_id` set; exports scoped to tenant | `/workspace/stats`, `/reports/*`, `/report-exports/*` | Any member | Owner/admin |
+| **Platform** | `saved_reports.freelancer_id` null | `/admin/reports/*`, `/admin/report-exports/*` | Super-admin | Super-admin |
+
+**Tables:** `saved_reports`, `report_exports` — see [database-erd.md](./database-erd.md).
+
+**Query rules:**
+
+- Aggregates (`SUM(hours)`, invoice totals, charge revenue) via SQL — never load full `time_logs` into PHP collections (same as Task 7.6).
+- Export files on disk (`storage/app/report-exports/`) — path in `report_exports.file_path`, not DB blobs.
+- Cross-tenant filter IDs → **404** `not_found`.
+- Platform exports logged via `AdminActivityLogger`.
+
+**Report types:** `workspace_overview`, `time_logs`, `unbilled_work`, `client_invoices`, `platform_overview`, `freelancer_list`, `subscription_revenue`.
+
+**Scale path:** Phase 17 adds read replicas, archiving, optional `freelancer_id` on `time_logs` if tenant-wide log reports slow.
+
+Detail: [docs/api/endpoints/reports.md](../api/endpoints/reports.md) · [admin-reports.md](../api/endpoints/admin-reports.md) · [schemas/report.md](../api/schemas/report.md).
+
+---
+
 ## Entity schemas
 
 ### Project

@@ -8,6 +8,7 @@ use App\Core\Http\Middleware\EnsureWritableSubscription;
 use App\Features\ClientBilling\Jobs\MarkOverdueClientInvoices;
 use App\Features\PlatformBilling\Console\NotifyTrialEndingCommand;
 use App\Features\PlatformBilling\Console\SyncPlansWithStripeCommand;
+use App\Features\Reporting\Console\PurgeExpiredReportExportsCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
@@ -21,10 +22,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
         SyncPlansWithStripeCommand::class,
         NotifyTrialEndingCommand::class,
+        PurgeExpiredReportExportsCommand::class,
     ])
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->job(new MarkOverdueClientInvoices)->daily();
         $schedule->command('subscriptions:notify-trial-ending')->daily();
+        $schedule->command('reports:purge-expired-exports')->daily();
     })
     ->withRouting(
         web: __DIR__.'/../routes/web.php',

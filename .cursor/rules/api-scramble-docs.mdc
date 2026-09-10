@@ -29,6 +29,7 @@ Route file: `routes/features/v1/{feature}.php` · Controller/Resource: `app/Feat
 | Admin | 10 |
 | Tenancy | 20 |
 | Clients / Projects / Tasks / Time Logs | 30–40 |
+| Reports | 45 |
 | Client Invoices | 50 |
 | Subscriptions | 60 |
 

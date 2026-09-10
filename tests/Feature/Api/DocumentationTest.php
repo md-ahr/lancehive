@@ -148,3 +148,22 @@ it('documents admin plan routes in openapi spec', function () {
         '/admin/freelancers/{freelancer}/subscription',
     ]);
 });
+
+it('documents reporting routes in openapi spec', function () {
+    $paths = $this->getJson('/docs/api.json')->json('paths');
+
+    expect($paths)->toHaveKeys([
+        '/workspace/stats',
+        '/reports/run',
+        '/reports',
+        '/reports/{savedReport}',
+        '/report-exports',
+        '/report-exports/{reportExport}',
+        '/admin/reports/platform-stats',
+        '/admin/reports/run',
+        '/admin/reports',
+        '/admin/reports/{savedReport}',
+        '/admin/report-exports',
+        '/admin/report-exports/{reportExport}',
+    ]);
+});

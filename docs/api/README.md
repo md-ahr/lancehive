@@ -46,6 +46,15 @@ Human-readable API contract for the LanceHive MVP (`/api/v1`). This is the **des
 | Subscription | [endpoints/subscription.md](./endpoints/subscription.md) | `/subscription/*` | Implemented |
 | Webhooks | [endpoints/webhooks.md](./endpoints/webhooks.md) | `POST /webhooks/stripe` | Implemented |
 
+## Planned (Phase 19 — Reporting)
+
+| Group | File | Routes | Status |
+|-------|------|--------|--------|
+| Reports (workspace) | [endpoints/reports.md](./endpoints/reports.md) | `/workspace/stats`, `/reports/*`, `/report-exports/*` | Planned |
+| Admin — Reports | [endpoints/admin-reports.md](./endpoints/admin-reports.md) | `/admin/reports/*`, `/admin/report-exports/*` | Planned |
+
+Schema: [schemas/report.md](./schemas/report.md). Tasks: [implementation-tasks.md](../multi-tenant/implementation-tasks.md) Phase 19.
+
 ## Coverage (MVP cross-check)
 
 54 endpoints documented across 13 endpoint files — all routes from `implementation-tasks.md` Phases 3–15 plus Phase 18 settings (planned).
@@ -68,7 +77,7 @@ Human-readable API contract for the LanceHive MVP (`/api/v1`). This is the **des
 
 ## Post-MVP (not documented here)
 
-- Phase 16+ growth features (except Phase 18 settings — documented above as planned)
+- Phase 16+ growth features (except Phase 18 settings and Phase 19 reporting — documented above)
 
 ## Keeping contract and code aligned
 

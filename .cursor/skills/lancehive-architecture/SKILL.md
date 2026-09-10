@@ -22,9 +22,9 @@ Freelancer → Subscription → Plan (platform billing)
 
 ## Feature modules
 
-`Auth` · `Tenancy` · `Delivery` · `ClientBilling` · `PlatformBilling` · `Admin` · `ClientPortal` · `Settings`
+`Auth` · `Tenancy` · `Delivery` · `ClientBilling` · `PlatformBilling` · `Admin` · `ClientPortal` · `Settings` · `Reporting`
 
-Dependency graph: Tenancy → Auth; Delivery → Tenancy; ClientBilling → Delivery + Tenancy; PlatformBilling → Tenancy; Settings → Auth + Tenancy; Admin → all via services.
+Dependency graph: Tenancy → Auth; Delivery → Tenancy; ClientBilling → Delivery + Tenancy; PlatformBilling → Tenancy; Settings → Auth + Tenancy; Reporting → Delivery + ClientBilling + Tenancy + PlatformBilling + Auth; Admin → all via services.
 
 ## Layer rules
 
@@ -60,6 +60,7 @@ Detail: `docs/project-structure/feature-based-architecture.md` §8.1
 | File layout | `docs/project-structure/feature-based-architecture.md` |
 | Domain detail | `docs/multi-tenant/architecture-overview.md` |
 | Scaling rules | `docs/multi-tenant/design-rationale-and-scaling.md` |
+| Reporting (Phase 19) | `docs/multi-tenant/implementation-tasks.md` Phase 19 · `docs/api/endpoints/reports.md` |
 | Audit / indexes | `docs/multi-tenant/architecture-review.md` |
 | Security & tenancy | `docs/development/security-and-auth.md` |
 

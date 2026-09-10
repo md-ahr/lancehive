@@ -35,6 +35,7 @@ HTTP → Application (Actions/Services) → Domain (Models/Enums/Policies) → I
 | ClientBilling | Delivery, Tenancy, Core | PlatformBilling |
 | PlatformBilling | Tenancy, Core | ClientBilling, Delivery |
 | Settings | Auth, Tenancy, Core | Delivery, ClientBilling, PlatformBilling |
+| Reporting | Delivery, ClientBilling, Tenancy, PlatformBilling, Auth, Core | — |
 
 ## API versioning (folders)
 

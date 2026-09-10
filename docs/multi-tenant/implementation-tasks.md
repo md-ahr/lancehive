@@ -51,6 +51,7 @@ Each task from Phase 2 onward has **Done when**, **Tests**, and **Edge cases** i
 | 11 | 4.1 – 8.9 |
 | 15 | 2.14, 3.x (Stripe billing; can run in parallel with 11 after tenant APIs exist) |
 | 18 | 2.4, 3.2, 8.2, 15.13 (settings APIs; integrations need invoice service + subscription notifications) |
+| 19 | 7.6, 8.1, 11.1, 13.4, 15.4, 3.10 (reporting; aggregates reuse time-summary + invoice patterns; exports reuse queue/notification pattern) |
 
 **Phase 1 order note:** Task IDs 1.16–1.17 (time logs) are numbered before 1.18–1.22 but must be **built after** 1.21 — `time_logs.client_invoice_item_id` FK targets `client_invoice_items`. Follow the section order below, not numeric ID order alone.
 
@@ -1361,6 +1362,283 @@ Configurable preferences at three scopes with role-based access. See [architectu
 
 ---
 
+## Phase 19 — Reporting (workspace stats, saved reports, async exports)
+
+Dashboard stats, filterable reports, saved report definitions, and async CSV exports for **freelancer workspaces** and **super-admin platform** scope. Reuses SQL aggregate pattern from Task 7.6; heavy exports run in queue (aligns with Phase 17.4 design — implemented here, scale infra in Phase 17).
+
+**Phase depends on:** 7.6 (project time-summary SQL pattern), 8.1 (invoice aggregates), 11.1 (isolation test patterns), 13.4 (owner/admin vs member for writes), 15.4 (`SubscriptionCharge` for revenue reports), 3.10 (`AdminActivityLogger` for platform exports).
+
+**Deep reference:** Report catalog and schema in [architecture-overview.md — Reporting model](./architecture-overview.md#reporting-model-phase-19) · ERD §8 in [database-erd.md](./database-erd.md).
+
+**Acceptance pattern (19.x — Reporting):** Feature module `app/Features/Reporting/`. Route file `routes/features/v1/reporting.php`. Scramble group **Reports** (weight: 45). Contract: `docs/api/endpoints/reports.md`, `docs/api/endpoints/admin-reports.md`, `docs/api/schemas/report.md`. Aggregates via SQL only — never load full `time_logs` into memory. Export files on disk (`storage/app/report-exports/`) — not DB blobs. Cross-tenant filter IDs (e.g. another workspace's `client_id`) → **404** `not_found`.
+
+**Role matrix:**
+
+| Endpoint group | Read (run / show / list) | Write (save / export / delete) |
+|----------------|--------------------------|--------------------------------|
+| `/workspace/stats`, `/reports/run`, `/reports`, `/report-exports` | Any workspace member | Owner/admin only |
+| `/admin/reports/*`, `/admin/report-exports/*` | Super-admin | Super-admin |
+
+**Report types (`ReportType` enum):**
+
+| Value | Scope | Used by |
+|-------|-------|---------|
+| `workspace_overview` | Workspace | `GET /workspace/stats` |
+| `time_logs` | Workspace | `/reports/run`, exports |
+| `unbilled_work` | Workspace | `/reports/run`, exports |
+| `client_invoices` | Workspace | `/reports/run`, exports |
+| `platform_overview` | Platform | `GET /admin/reports/platform-stats` |
+| `freelancer_list` | Platform | `/admin/reports/run`, exports |
+| `subscription_revenue` | Platform | `/admin/reports/run`, exports |
+
+**Filter JSON keys (per type):** `from`, `to` (date), `client_id`, `project_id`, `user_id`, `status`, `plan_id` — validated in `ReportFilterValidator`; unknown keys stripped.
+
+### Task 19.1 — Reporting enums
+
+- **Est.:** XS
+- **Depends on:** 0.1
+- **Files:** `app/Features/Reporting/Enums/ReportType.php`, `ReportScope.php` (`Workspace`, `Platform`), `ExportFormat.php` (`Csv`; `Pdf` reserved), `ExportStatus.php` (`Pending`, `Processing`, `Completed`, `Failed`)
+- **Done when:** Enums match report catalog above; unit test asserts scope mapping per type.
+- **Tests:** Unit — each `ReportType` maps to correct `ReportScope`.
+- **Edge cases:** `Pdf` format rejected at validation until Task 19.26 documents otherwise.
+
+### Task 19.2 — saved_reports migration
+
+- **Est.:** S
+- **Depends on:** 1.2, 0.1
+- **Schema:** `id`, `freelancer_id` (FK nullable — null = platform-scoped), `created_by_user_id` (FK users), `name` (varchar 255), `report_type` (string), `filters` (jsonb, default `{}`), `timestamps`; index `(freelancer_id, created_by_user_id)`
+- **Done when:** `migrate:fresh` succeeds; platform rows have `freelancer_id` null.
+- **Tests:** Factory creates tenant and platform saved reports.
+- **Edge cases:** Cascade delete when freelancer deleted (or restrict — document choice in migration).
+
+### Task 19.3 — report_exports migration
+
+- **Est.:** S
+- **Depends on:** 19.2
+- **Schema:** `id`, `freelancer_id` (FK nullable), `saved_report_id` (FK nullable), `requested_by_user_id` (FK), `report_type`, `filters` (jsonb), `format`, `status`, `file_path` (nullable), `row_count` (nullable int), `error_message` (nullable text), `expires_at`, `completed_at` (nullable), `timestamps`; index `(freelancer_id, requested_by_user_id, status)`
+- **Done when:** `migrate:fresh` succeeds.
+- **Tests:** Factory with each `ExportStatus`.
+- **Edge cases:** `file_path` null until job completes.
+
+### Task 19.4 — SavedReport and ReportExport models
+
+- **Est.:** S
+- **Depends on:** 19.1 – 19.3
+- **Files:** `SavedReport`, `ReportExport` models; factories under `database/factories/Reporting/`; casts for enums and `filters` array
+- **Done when:** Relationships: `freelancer()`, `createdBy()` / `requestedBy()`, `savedReport()`; tenant scope helper on queries where applicable.
+- **Tests:** Unit — casts, factory states.
+- **Edge cases:** Platform export has null `freelancer_id`.
+
+### Task 19.5 — ReportQueryService (workspace overview)
+
+- **Est.:** M
+- **Depends on:** 19.1, 4.2, 7.1, 8.1
+- **Files:** `app/Features/Reporting/Services/ReportQueryService.php`
+- **Returns:** Active client count, active project count, hours logged current calendar month, total unbilled hours, outstanding invoice total (sent + overdue, not draft)
+- **Actions:** SQL `SUM` / `COUNT` with tenant global scopes — same pattern as Task 7.6
+- **Done when:** Empty workspace returns zeros; unit test asserts SQL aggregates without loading all logs.
+- **Tests:** Unit — zero data; seeded workspace with logs and invoices.
+- **Edge cases:** Soft-deleted projects excluded from active count.
+
+### Task 19.6 — ReportQueryService (platform overview)
+
+- **Est.:** M
+- **Depends on:** 19.1, 3.3, 15.4
+- **Returns:** Freelancers by status, subscriptions by plan/status, trials ending within 7 days count
+- **Actions:** Unscoped platform queries on `freelancers`, `subscriptions` — admin-only service
+- **Done when:** Counts match seeded data.
+- **Tests:** Unit — status breakdown; no tenant header required.
+- **Edge cases:** Freelancer without subscription counted separately.
+
+### Task 19.7 — GET /workspace/stats
+
+- **Est.:** S
+- **Depends on:** 19.5
+- **Files:** `WorkspaceStatsController`, `ShowWorkspaceStatsRequest`, `WorkspaceStatsResource`; route in `reporting.php`
+- **Middleware:** `auth:sanctum`, `freelancer.context`
+- **Done when:** 200 returns `WorkspaceStatsResource`; path in `DocumentationTest`.
+- **Tests:** Feature — member 200; 401; cross-tenant header 404/403 per middleware.
+- **Edge cases:** Read allowed when subscription read-only.
+
+### Task 19.8 — GET /admin/reports/platform-stats
+
+- **Est.:** S
+- **Depends on:** 19.6
+- **Files:** `AdminPlatformStatsController`, `PlatformStatsResource`; route under `admin` prefix in `reporting.php`
+- **Middleware:** `auth:sanctum`, `can:super-admin`
+- **Done when:** 200 for super-admin; 403 non-admin; path in `DocumentationTest`.
+- **Tests:** Feature — auth matrix.
+- **Edge cases:** No `X-Freelancer-Id` required.
+
+### Task 19.9 — Reporting route file registration
+
+- **Est.:** XS
+- **Depends on:** 19.7, 19.8
+- **Files:** `routes/features/v1/reporting.php`; `require` in `routes/api.php`
+- **Done when:** Routes resolve under `/api/v1`; Scramble `#[Group('Reports', weight: 45)]` on controllers.
+- **Tests:** `route:list` smoke; DocumentationTest paths for stats endpoints.
+- **Edge cases:** Tenant controllers include `X-Freelancer-Id` header attribute.
+
+### Task 19.10 — ReportFilterValidator
+
+- **Est.:** M
+- **Depends on:** 19.1, 4.2, 8.1
+- **Files:** `ReportFilterValidator` — per-type allowed keys, date order, tenant-owned `client_id` / `project_id` existence
+- **Done when:** Invalid filter → validation exception; foreign tenant IDs → 404 via existence check scoped to tenant.
+- **Tests:** Unit — each report type; cross-tenant client_id rejected.
+- **Edge cases:** `from` > `to` → 422.
+
+### Task 19.11 — RunReportAction (workspace types)
+
+- **Est.:** M
+- **Depends on:** 19.5, 19.10
+- **Types:** `time_logs`, `unbilled_work`, `client_invoices`
+- **Returns:** `{ summary: {...}, preview: CursorPaginator }` — preview uses existing Resource shapes where possible (`TimeLogResource`, `ClientInvoiceResource`)
+- **Done when:** Summary totals match SQL; preview cursor paginated max 100.
+- **Tests:** Unit — summary math; Feature — run with filters.
+- **Edge cases:** Empty result set returns empty preview, zero summary.
+
+### Task 19.12 — POST /reports/run
+
+- **Est.:** S
+- **Depends on:** 19.11
+- **Files:** `RunReportController`, `RunReportRequest`, `ReportRunResource`
+- **Body:** `report_type`, `filters` (object), optional `per_page`, `cursor`
+- **Done when:** Member can run; path in `DocumentationTest`.
+- **Tests:** Feature — 200 shape; invalid type 422; member OK; owner/admin OK.
+- **Edge cases:** `workspace_overview` via this endpoint optional — prefer `GET /workspace/stats`.
+
+### Task 19.13 — RunReportAction (platform types)
+
+- **Est.:** M
+- **Depends on:** 19.6, 19.10
+- **Types:** `freelancer_list`, `subscription_revenue`
+- **Done when:** Preview paginates; revenue summary sums paid charges only.
+- **Tests:** Unit — revenue SUM; Feature — admin run.
+- **Edge cases:** Date filter on `paid_at` for charges.
+
+### Task 19.14 — POST /admin/reports/run
+
+- **Est.:** S
+- **Depends on:** 19.13
+- **Files:** `AdminRunReportController`, reuse `RunReportRequest` / `ReportRunResource` with platform guard
+- **Done when:** Super-admin 200; non-admin 403.
+- **Tests:** Feature — auth matrix; path in `DocumentationTest`.
+- **Edge cases:** Platform filters ignore `X-Freelancer-Id`.
+
+### Task 19.15 — SavedReportPolicy and ReportExportPolicy
+
+- **Est.:** S
+- **Depends on:** 19.4, 13.4
+- **Rules:** Any member view/run; owner/admin create/update/delete saved reports and queue exports; platform rows super-admin only
+- **Done when:** Policy methods match role matrix above.
+- **Tests:** Unit — member read, member write denied, owner write allowed.
+- **Edge cases:** User cannot access another tenant's saved report → 404.
+
+### Task 19.16 — Saved reports CRUD (workspace)
+
+- **Est.:** M
+- **Depends on:** 19.15
+- **Routes:** `GET/POST /reports`, `GET/PATCH/DELETE /reports/{report}`
+- **Done when:** Cursor list; CRUD respects policy; paths in `DocumentationTest`.
+- **Tests:** Feature — CRUD matrix; cross-tenant 404.
+- **Edge cases:** PATCH partial — name and/or filters.
+
+### Task 19.17 — Saved reports CRUD (admin)
+
+- **Est.:** M
+- **Depends on:** 19.15
+- **Routes:** `GET/POST /admin/reports`, `GET/PATCH/DELETE /admin/reports/{report}` — always `freelancer_id` null
+- **Done when:** Super-admin only; paths in `DocumentationTest`.
+- **Tests:** Feature — 403 non-admin; platform saved report list.
+- **Edge cases:** Tenant user cannot hit admin routes.
+
+### Task 19.18 — ReportExportService and storage disk
+
+- **Est.:** M
+- **Depends on:** 19.4, 19.11, 19.13
+- **Files:** `ReportExportService`, `config/filesystems.php` disk `report-exports` → `storage/app/report-exports`
+- **Actions:** Create pending row; stream CSV in chunks; set `file_path`, `row_count`, `expires_at` (+7 days)
+- **Done when:** CSV written without loading all rows; unit test with `Storage::fake()`.
+- **Tests:** Unit — CSV headers match report type; large dataset uses chunk/cursor.
+- **Edge cases:** Failed write sets `Failed` status and `error_message`.
+
+### Task 19.19 — GenerateReportExportJob and ReportReadyNotification
+
+- **Est.:** M
+- **Depends on:** 19.18
+- **Files:** `GenerateReportExportJob`, `ReportReadyNotification` (queued mail, link to download)
+- **Done when:** Job transitions status; notification sent on success.
+- **Tests:** Feature — `Queue::fake()` dispatch; notification content has export id.
+- **Edge cases:** Job idempotent if already completed.
+
+### Task 19.20 — Report exports API (workspace)
+
+- **Est.:** M
+- **Depends on:** 19.19, 19.15
+- **Routes:** `POST /report-exports`, `GET /report-exports`, `GET /report-exports/{export}` — completed export returns time-limited download URL (signed route)
+- **Body (POST):** `report_type`, `filters`, `format` (`csv`), optional `saved_report_id`
+- **Done when:** Owner/admin can queue; member read-only on own exports list; paths in `DocumentationTest`.
+- **Tests:** Feature — queue → job → completed download; member POST 403.
+- **Edge cases:** Expired export → 410 or 404 with `export_expired` code.
+
+### Task 19.21 — Report exports API (admin)
+
+- **Est.:** M
+- **Depends on:** 19.19, 19.15
+- **Routes:** `POST/GET /admin/report-exports`, `GET /admin/report-exports/{export}`
+- **Done when:** Super-admin queue and download; `AdminActivityLogger` on POST with action `report_export_queued`.
+- **Tests:** Feature — activity log row; 403 non-admin.
+- **Edge cases:** Platform export has null `freelancer_id`.
+
+### Task 19.22 — PurgeExpiredReportExports command
+
+- **Est.:** S
+- **Depends on:** 19.18
+- **Files:** `app/Features/Reporting/Console/PurgeExpiredReportExportsCommand.php`; schedule daily in `routes/console.php`
+- **Done when:** Deletes rows where `expires_at` < now and removes files from disk.
+- **Tests:** Feature — expired row removed; file deleted.
+- **Edge cases:** Missing file on disk still deletes row.
+
+### Task 19.23 — Reporting isolation feature tests
+
+- **Est.:** M
+- **Depends on:** 19.12, 19.14, 19.16, 19.20
+- **Files:** `tests/Feature/Reporting/ReportingIsolationTest.php`
+- **Cases:** Workspace A filters with B's `client_id` → 404; saved report cross-tenant → 404; non-admin admin routes → 403
+- **Done when:** All cases pass; mirrors Phase 11 style.
+- **Tests:** Feature — dedicated file.
+- **Edge cases:** Super-admin override does not apply to tenant report run without membership.
+
+### Task 19.24 — API contract markdown and schema
+
+- **Est.:** M
+- **Depends on:** 19.7 – 19.22
+- **Files:** `docs/api/endpoints/reports.md`, `admin-reports.md`, `schemas/report.md`; update `docs/api/README.md` endpoint index — **design stubs exist pre-build; verify against Resources on completion**
+- **Done when:** Every route documented with auth, middleware, request, response, errors tables; matches shipped Resources.
+- **Tests:** Manual cross-check against Resources after implementation.
+- **Edge cases:** Document `export_expired` error in `errors.md` if implemented.
+
+### Task 19.25 — DocumentationTest and Scramble coverage
+
+- **Est.:** S
+- **Depends on:** 19.9, 19.24
+- **Files:** `tests/Feature/Api/DocumentationTest.php` — all reporting paths; `api-scramble-docs.mdc` Reports group weight 45
+- **Done when:** OpenAPI lists all Phase 19 paths; group order stable.
+- **Tests:** Feature — DocumentationTest green.
+- **Edge cases:** Admin and tenant paths both registered.
+
+### Task 19.26 — Architecture and ERD documentation
+
+- **Est.:** S
+- **Depends on:** 19.2, 19.3
+- **Files:** `docs/project-structure/feature-based-architecture.md`, `docs/multi-tenant/database-erd.md`, `docs/multi-tenant/architecture-overview.md` — **pre-aligned in spec pass; re-verify when migrations land**
+- **Done when:** Module import rules and ERD match final migrations.
+- **Tests:** N/A — doc review on PR.
+- **Edge cases:** Phase 17.6 note if tenant-wide log reports need `freelancer_id` on `time_logs`.
+
+---
+
 ## Phase 16 — Platform growth (future)
 
 | Task | Description |
@@ -1384,7 +1662,7 @@ Trigger when metrics justify (slow lists, `time_logs` > ~500k, heavy reporting).
 | 17.1 | Archive job — move `time_logs` older than N years to `time_logs_archive` or cold storage |
 | 17.2 | Read replica for report/export queries |
 | 17.3 | Optional `time_logs` partition by `logged_at` (PostgreSQL) |
-| 17.4 | Async report generation (export CSV/PDF via queue + email link) |
+| 17.4 | Async report generation — **core flow in Phase 19**; scale hardening (read replica routing, larger exports) stays here |
 | 17.5 | Per-tenant rate limiting on write APIs |
 | 17.6 | Optional denormalized `freelancer_id` on `time_logs` if tenant-wide log reports need it |
 
@@ -1414,13 +1692,18 @@ Respect **build order** within each PR — e.g. PR 5 must merge invoice items (1
 | 16 | 11.1 – 11.5 | Tenant isolation tests |
 | 17 | 15.1 – 15.14 | Platform subscriptions (Stripe) |
 | 18 | 18.1 – 18.15 | Settings (user, workspace, platform) |
-| 19+ | 12 – 14, 16 | Role cleanup, team, portal, growth |
+| 19 | 19.1 – 19.10 | Reporting foundation (stats endpoints) |
+| 20 | 19.11 – 19.15 | Ad-hoc report run |
+| 21 | 19.16 – 19.17 | Saved reports |
+| 22 | 19.18 – 19.22 | Async CSV exports |
+| 23 | 19.23 – 19.26 | Reporting isolation tests and docs |
+| 24+ | 12 – 14, 16 | Role cleanup, team, portal, growth |
 
 ---
 
 ## Task checklist
 
-Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-11 (Phase 18 settings complete).
+Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-11 (Phase 19 reporting complete).
 
 ```
 Phase 0
@@ -1598,4 +1881,32 @@ Phase 18 — Settings ✅
 [x] 18.13 Notification preference gates
 [x] 18.14 Embed user settings summary on GET /me
 [x] 18.15 Settings isolation and documentation tests
+
+Phase 19 — Reporting ✅
+[x] 19.1  Reporting enums
+[x] 19.2  saved_reports migration
+[x] 19.3  report_exports migration
+[x] 19.4  SavedReport and ReportExport models
+[x] 19.5  ReportQueryService (workspace overview)
+[x] 19.6  ReportQueryService (platform overview)
+[x] 19.7  GET /workspace/stats
+[x] 19.8  GET /admin/reports/platform-stats
+[x] 19.9  Reporting route file registration
+[x] 19.10 ReportFilterValidator
+[x] 19.11 RunReportAction (workspace types)
+[x] 19.12 POST /reports/run
+[x] 19.13 RunReportAction (platform types)
+[x] 19.14 POST /admin/reports/run
+[x] 19.15 SavedReportPolicy and ReportExportPolicy
+[x] 19.16 Saved reports CRUD (workspace)
+[x] 19.17 Saved reports CRUD (admin)
+[x] 19.18 ReportExportService and storage disk
+[x] 19.19 GenerateReportExportJob and ReportReadyNotification
+[x] 19.20 Report exports API (workspace)
+[x] 19.21 Report exports API (admin)
+[x] 19.22 PurgeExpiredReportExports command
+[x] 19.23 Reporting isolation feature tests
+[x] 19.24 API contract markdown and schema
+[x] 19.25 DocumentationTest and Scramble coverage
+[x] 19.26 Architecture and ERD documentation
 ```

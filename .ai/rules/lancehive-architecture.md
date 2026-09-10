@@ -4,7 +4,7 @@
 
 ## Feature modules
 
-Domain code lives under `app/Features/{Feature}/` — Auth, Tenancy, Delivery, ClientBilling, PlatformBilling, Admin. Do not add a flat `app/Services/` dump or `app/Features/.../V1/` while only v1 exists.
+Domain code lives under `app/Features/{Feature}/` — Auth, Tenancy, Delivery, ClientBilling, PlatformBilling, Admin, Settings, Reporting. Do not add a flat `app/Services/` dump or `app/Features/.../V1/` while only v1 exists.
 
 Cross-cutting infrastructure only in `app/Core/` (Tenancy, Http, Pagination). Core never imports Features.
 
@@ -23,6 +23,7 @@ Controllers stay thin. Business rules, plan limits, and invoice math live in Act
 | Delivery | Tenancy, Core | ClientBilling, PlatformBilling |
 | ClientBilling | Delivery, Tenancy, Core | PlatformBilling |
 | PlatformBilling | Tenancy, Core | ClientBilling, Delivery |
+| Reporting | Delivery, ClientBilling, Tenancy, PlatformBilling, Auth, Core | — |
 
 ## Tenancy (Phase 2+)
 

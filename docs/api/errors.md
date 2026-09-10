@@ -39,6 +39,7 @@ Includes `code`:
 | 403 | `workspace_read_only` | Write blocked — subscription lapsed or trial expired |
 | 403 | `super_admin_required` | Non-admin accessed `/admin/*` or `GET /users` |
 | 404 | `not_found` | Resource missing or cross-tenant access |
+| 410 | `export_expired` | Report export past `expires_at` |
 | 422 | `validation_failed` | Form Request validation (implicit — no `code` in body) |
 | 422 | `plan_limit_exceeded` | `PlanLimitService` — max clients, projects, or team members |
 | 422 | `invoice_not_editable` | Mutating a non-draft client invoice |

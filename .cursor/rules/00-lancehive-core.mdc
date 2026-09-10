@@ -46,6 +46,7 @@ Feature slices under `app/Features/{Name}/` (not versioned) · route files in `r
 | Tenant query rules | `docs/multi-tenant/design-rationale-and-scaling.md` |
 | Module imports | `docs/project-structure/feature-based-architecture.md` §6 |
 | Indexes / ERD | `docs/multi-tenant/database-erd.md` |
+| Reporting design | `docs/multi-tenant/architecture-overview.md` § Reporting model · `docs/api/endpoints/reports.md` |
 | API versioning & folders | `api-versioning.mdc` · `docs/project-structure/feature-based-architecture.md` §8.1 |
 | API contract (markdown) | `docs/api/README.md` · `docs/api/conventions.md` · `docs/api/errors.md` |
 

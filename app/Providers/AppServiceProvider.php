@@ -7,6 +7,10 @@ use App\Core\Tenancy\TenantContext;
 use App\Features\Auth\Models\User;
 use App\Features\PlatformBilling\Contracts\StripeGateway;
 use App\Features\PlatformBilling\Services\StripeCashierGateway;
+use App\Features\Reporting\Models\ReportExport;
+use App\Features\Reporting\Models\SavedReport;
+use App\Features\Reporting\Policies\ReportExportPolicy;
+use App\Features\Reporting\Policies\SavedReportPolicy;
 use App\Features\Settings\Models\WorkspaceSettings;
 use App\Features\Settings\Policies\WorkspaceSettingsPolicy;
 use App\Features\Tenancy\Models\Freelancer;
@@ -58,6 +62,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::policy(WorkspaceSettings::class, WorkspaceSettingsPolicy::class);
+        Gate::policy(SavedReport::class, SavedReportPolicy::class);
+        Gate::policy(ReportExport::class, ReportExportPolicy::class);
 
         Gate::define('super-admin', fn (User $user) => $user->isSuperAdmin());
         Gate::define('freelancer', fn (User $user) => $user->isFreelancer());

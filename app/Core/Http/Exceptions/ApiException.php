@@ -38,6 +38,7 @@ final class ApiException extends Exception
             ApiErrorCode::PlanLimitExceeded => 'Plan limit reached.',
             ApiErrorCode::InvoiceNotEditable => 'This invoice cannot be modified.',
             ApiErrorCode::TooManyRequests => 'Too many requests.',
+            ApiErrorCode::ExportExpired => 'This report export has expired.',
         };
     }
 }

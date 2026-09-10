@@ -10,4 +10,5 @@ Route::prefix(config('api.route_version'))->group(function (): void {
     require config('api.features_routes').'/client-billing.php';
     require config('api.features_routes').'/portal.php';
     require config('api.features_routes').'/platform-billing.php';
+    require config('api.features_routes').'/reporting.php';
 });

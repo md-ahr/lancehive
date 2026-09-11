@@ -1,7 +1,6 @@
 <?php
 
+use App\Core\Http\Controllers\RootController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', RootController::class);

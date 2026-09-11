@@ -18,7 +18,25 @@ Tech stack, pinned versions, config files, and `.env` structure.
 | Testing | Pest 4 + PHPUnit 12 | Feature + unit; sqlite in-memory for tests |
 | Formatting | Laravel Pint | Run on dirty PHP before finishing |
 | Local dev | Laravel Sail | Docker Compose — **all commands via `vendor/bin/sail`** |
-| Frontend build | Vite 8 + Tailwind 4 | Minimal — API-first MVP |
+| Frontend | Separate SPA | Consumes `/api/v1` — not rendered by Laravel |
+
+---
+
+## API-only backend (no Blade UI)
+
+LanceHive is a **headless API**. Laravel does not serve application pages.
+
+| Surface | Path | Notes |
+|---------|------|-------|
+| API root | `GET /` | JSON discovery payload (`status`, `api`, `docs`, `health`) |
+| Health check | `GET /up` | Laravel built-in health route |
+| REST API | `/api/v1/*` | Sanctum bearer auth · API Resources |
+| API docs | `/docs/api` | Scramble OpenAPI UI |
+| Transactional mail | Notifications | `MailMessage` — Laravel vendor mail templates only |
+
+**No Blade views** for the product UI. The SPA lives in a separate repo and uses `FRONTEND_URL` for password-reset links (`config/app.php`).
+
+Optional later: publish `resources/views/vendor/mail` for branded emails, or Blade/HTML templates for invoice PDFs (Phase 16.4).
 
 ---
 
@@ -44,15 +62,7 @@ Check live versions before relying on package APIs:
 vendor/bin/sail composer show --direct
 ```
 
-npm (`package.json`):
-
-| Package | Constraint | Role |
-|---------|------------|------|
-| `vite` | `^8.0.0` | Asset bundler |
-| `tailwindcss` | `^4.0.0` | CSS |
-| `laravel-vite-plugin` | `^3.1` | Laravel integration |
-
-Do **not** add packages without explicit approval.
+Do **not** add Composer or npm packages without explicit approval. This repo has **no** `package.json` — frontend assets are built in the SPA project.
 
 ---
 
@@ -247,14 +257,6 @@ LOG_STACK=single
 LOG_LEVEL=debug
 ```
 
-### Vite
-
-```dotenv
-VITE_APP_NAME="${APP_NAME}"
-```
-
-Build: `vendor/bin/sail npm run build` · dev: `vendor/bin/sail npm run dev`
-
 ### AWS (optional — file storage)
 
 ```dotenv
@@ -269,7 +271,6 @@ FILESYSTEM_DISK=local
 
 ```dotenv
 APP_PORT=80
-VITE_PORT=5173
 FORWARD_DB_PORT=5432
 FORWARD_REDIS_PORT=6379
 WWWUSER=1000
@@ -329,8 +330,6 @@ vendor/bin/sail up -d
 vendor/bin/sail artisan key:generate
 vendor/bin/sail artisan migrate
 vendor/bin/sail composer install
-vendor/bin/sail npm install
-vendor/bin/sail npm run build
 ```
 
 Or use the Composer shortcut:
@@ -353,10 +352,10 @@ composer run setup
 
 | URL | Purpose |
 |-----|---------|
-| `http://localhost` | Application |
+| `http://localhost` | API root (`GET /` JSON discovery) |
+| `http://localhost/up` | Health check |
 | `http://localhost/docs/api` | Scramble API docs UI |
 | `http://localhost/docs/api.json` | OpenAPI JSON |
 | `http://localhost:8025` | Mailpit inbox |
-| `http://localhost:5173` | Vite dev server |
 
 Resolve exact URLs in agent responses via Boost `get-absolute-url` when sharing links with the user.

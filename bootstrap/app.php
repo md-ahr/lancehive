@@ -5,6 +5,7 @@ use App\Core\Http\Exceptions\ApiException;
 use App\Core\Http\Middleware\EnsureClientContext;
 use App\Core\Http\Middleware\EnsureFreelancerContext;
 use App\Core\Http\Middleware\EnsureWritableSubscription;
+use App\Core\Http\Middleware\SecurityHeaders;
 use App\Features\ClientBilling\Jobs\MarkOverdueClientInvoicesJob;
 use App\Features\PlatformBilling\Console\NotifyTrialEndingCommand;
 use App\Features\PlatformBilling\Console\SyncPlansWithStripeCommand;
@@ -37,6 +38,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustProxies(at: env('TRUSTED_PROXIES', '*'));
+
+        $middleware->append(SecurityHeaders::class);
+
         $middleware->alias([
             'freelancer.context' => EnsureFreelancerContext::class,
             'client.context' => EnsureClientContext::class,

@@ -85,6 +85,8 @@ vendor/bin/sail stop
 | `config/database.php` | PostgreSQL connection (Sail) |
 | `config/cache.php` | Redis store |
 | `config/sanctum.php` | Token abilities, expiration |
+| `config/security.php` | Login lockout thresholds |
+| `config/cors.php` | SPA CORS policy |
 | `config/auth.php` | Guards, providers |
 | `config/mail.php` | Mailers (`smtp`, `resend`, `log`, …); default from `MAIL_MAILER` |
 | `config/services.php` | Third-party keys (`RESEND_API_KEY`, Stripe, AWS) |
@@ -116,6 +118,12 @@ Copy from `.env.example` on first setup (`composer run setup` handles this). Def
 | `APP_URL` | `http://localhost` | Base URL (Sail port 80) |
 | `APP_LOCALE` | `en` | Default locale |
 | `FRONTEND_URL` | `http://localhost:5173` | SPA origin (future client apps) |
+| `SANCTUM_TOKEN_EXPIRATION` | `43200` | Bearer token lifetime in minutes (30 days) |
+| `LOGIN_MAX_ATTEMPTS` | `10` | Failed logins before account lockout |
+| `LOGIN_LOCKOUT_MINUTES` | `15` | Account lock duration |
+| `CORS_ALLOWED_ORIGINS` | *(falls back to `FRONTEND_URL`)* | Comma-separated allowed SPA origins |
+| `TRUSTED_PROXIES` | `*` (behind nginx) | Proxy IPs/CIDRs for `X-Forwarded-*` |
+| `SESSION_SECURE_COOKIE` | `false` locally | Set `true` in production (HTTPS) |
 
 ### API versioning (two distinct vars)
 
@@ -284,6 +292,31 @@ WWWGROUP=1000
 | `MAIL_MAILER` | `smtp` (Mailpit) | `array` | `resend` |
 | `RESEND_API_KEY` | *(empty)* | — | deployment secret |
 | `MAIL_FROM_ADDRESS` | `hello@example.com` | — | verified Resend sender domain |
+| `APP_DEBUG` | `true` | — | **`false`** |
+| `LOG_LEVEL` | `debug` | — | **`error`** or `warning` |
+| `SANCTUM_TOKEN_EXPIRATION` | `43200` | — | Review TTL; shorter for stricter prod |
+| `SESSION_SECURE_COOKIE` | `false` | — | **`true`** |
+| `RATE_LIMIT_STORE` | `redis` | `array` | **`redis`** |
+
+---
+
+## Pre-launch security checklist
+
+Before deploying to a VPS (Hostinger, AWS, DigitalOcean, etc.):
+
+- [ ] `APP_ENV=production` and `APP_DEBUG=false`
+- [ ] `APP_KEY` generated and stored as deployment secret
+- [ ] `LOG_LEVEL=error` (or `warning`) — not `debug`
+- [ ] `SANCTUM_TOKEN_EXPIRATION` set (default 43200 minutes)
+- [ ] `SESSION_SECURE_COOKIE=true` when serving HTTPS
+- [ ] `TRUSTED_PROXIES` matches your nginx / load balancer
+- [ ] `CORS_ALLOWED_ORIGINS` lists only your SPA domain(s)
+- [ ] `CACHE_STORE=redis` and `RATE_LIMIT_STORE=redis`
+- [ ] Stripe / Resend keys in deployment secrets — not in Git
+- [ ] `/docs/api` blocked in production (`viewApiDocs` gate)
+- [ ] TLS termination + HTTP→HTTPS redirect at nginx (see [`deployment/README.md`](../deployment/README.md))
+- [ ] Queue worker and scheduler cron running
+- [ ] Run `composer audit --locked` before release
 
 ---
 

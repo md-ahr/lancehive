@@ -24,7 +24,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password', 'role', 'timezone', 'locale', 'notification_preferences'])]
+#[Fillable(['name', 'email', 'password', 'timezone', 'locale', 'notification_preferences'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -38,10 +38,53 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'locked_until' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
             'notification_preferences' => NotificationPreferencesCast::class,
         ];
+    }
+
+    public function isLoginLocked(): bool
+    {
+        if ($this->locked_until === null) {
+            return false;
+        }
+
+        if ($this->locked_until->isPast()) {
+            $this->clearLoginLockout();
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public function recordFailedLogin(): void
+    {
+        $attempts = $this->failed_login_attempts + 1;
+
+        $attributes = [
+            'failed_login_attempts' => $attempts,
+        ];
+
+        if ($attempts >= config('security.login.max_attempts')) {
+            $attributes['locked_until'] = now()->addMinutes(config('security.login.lockout_minutes'));
+        }
+
+        $this->forceFill($attributes)->save();
+    }
+
+    public function clearLoginLockout(): void
+    {
+        if ($this->failed_login_attempts === 0 && $this->locked_until === null) {
+            return;
+        }
+
+        $this->forceFill([
+            'failed_login_attempts' => 0,
+            'locked_until' => null,
+        ])->save();
     }
 
     public function prefersNotification(string $key, ?Freelancer $freelancer = null): bool

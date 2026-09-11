@@ -33,16 +33,73 @@ Admin routes (`/admin/*`, `GET /users`) skip tenant middleware and use `can:supe
 | Public routes | `login`, `forgot-password`, `reset-password`, `webhooks/stripe` |
 | Protected routes | `auth:sanctum` middleware |
 | Logout | `POST /logout` — revokes current token |
+| Token lifetime | `SANCTUM_TOKEN_EXPIRATION` minutes (default **43200** = 30 days); expired token → `401 unauthenticated` |
+| Token hygiene | Login and password reset delete **all** tokens before issuing a new one; logout deletes current token only |
+
+### Token lifetime (Sanctum)
+
+| Setting | Location | Rule |
+|---------|----------|------|
+| `SANCTUM_TOKEN_EXPIRATION` | `.env` → `config/sanctum.php` | Minutes until bearer tokens expire globally |
+| Default | `43200` (30 days) | Override per environment; use shorter TTL for stricter prod |
+| Expired token | Any protected route | `401` · `code: unauthenticated` |
+| Per-token `expires_at` | Optional on `createToken()` | Must align with config expiration policy |
 
 ### Login & password reset
 
 | Route | Throttle | Notes |
 |-------|----------|-------|
-| `POST /login` | `login` (5/min per IP) | Wrong credentials → `422` on `errors.email` (no user enumeration) |
+| `POST /login` | `login` (5/min per IP) + per-account lockout | Wrong credentials → `422` on `errors.email` (no user enumeration); locked account uses **same** message |
 | `POST /forgot-password` | `password-reset` (3/min per IP) | Always returns success message |
 | `POST /reset-password` | `password-reset` (3/min per IP) | Invalid token → `422` |
 
 Password rules: min 8 chars; production adds mixed case, symbols, uncompromised check (`AppServiceProvider`).
+
+### Account lockout (per email)
+
+| Setting | Env | Default |
+|---------|-----|---------|
+| Max failures | `LOGIN_MAX_ATTEMPTS` | `10` |
+| Lock duration | `LOGIN_LOCKOUT_MINUTES` | `15` |
+
+| Column | Purpose |
+|--------|---------|
+| `users.failed_login_attempts` | Count since last successful login |
+| `users.locked_until` | `null` or future timestamp — block login until elapsed |
+
+Rules:
+
+- Increment `failed_login_attempts` on wrong password for an **existing** user; reset both columns on successful login.
+- When attempts ≥ max, set `locked_until = now() + lockout minutes`.
+- Locked or wrong password → generic `422` on `errors.email` — **never** reveal lockout vs wrong password vs missing user.
+- IP throttle (`throttle:login`) remains the first layer.
+
+### Transport security
+
+| Control | Implementation |
+|---------|----------------|
+| Security headers | `SecurityHeaders` middleware on all responses |
+| `X-Content-Type-Options` | `nosniff` |
+| `X-Frame-Options` | `DENY` |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` |
+| `Permissions-Policy` | Restrict camera, microphone, geolocation |
+| `Strict-Transport-Security` | Set only when request is secure (HTTPS) |
+| Trusted proxies | `TRUSTED_PROXIES` in `.env`; required behind nginx / load balancer so rate limits and `$request->secure()` work |
+| Secure session cookie | `SESSION_SECURE_COOKIE=true` in production |
+
+Nginx TLS, HTTP→HTTPS redirect, and edge rate limits: see [`deployment/README.md`](../../deployment/README.md).
+
+### CORS
+
+| Setting | Purpose |
+|---------|---------|
+| `CORS_ALLOWED_ORIGINS` | Comma-separated SPA origins allowed to call the API |
+| `FRONTEND_URL` | Fallback when `CORS_ALLOWED_ORIGINS` unset |
+
+Rules:
+
+- Explicit origins only — **never** `allowed_origins: ['*']` with `supports_credentials: true`.
+- Bearer-token API uses `supports_credentials: false`; cookies are not the primary auth mechanism.
 
 ### Tests
 
@@ -196,6 +253,7 @@ Enforced in middleware, **not** in policies.
 ### Data exposure
 
 - **Never** include hidden fields (`password`, `remember_token`) in API Resources
+- **Never** mass-assign `users.role` — set only via seeders, admin services, or `forceFill()` on trusted paths
 - **Never** return stack traces or SQL errors to API clients in production
 - **Never** enumerate whether an email exists via forgot-password response
 

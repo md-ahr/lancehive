@@ -25,7 +25,7 @@ Scramble group: **Authentication** (weight: 0). Public routes except `logout` an
 | HTTP | code | When |
 |------|------|------|
 | 422 | validation_failed | Missing/invalid email or password format |
-| 422 | validation_failed | Wrong credentials (`errors.email`) |
+| 422 | validation_failed | Wrong credentials (`errors.email`) — same message when account is locked |
 | 429 | too_many_requests | Rate limit exceeded |
 
 ---
@@ -103,3 +103,49 @@ Always returns success message (no email enumeration).
 |------|------|------|
 | 422 | validation_failed | Invalid token, email, or password |
 | 429 | too_many_requests | Rate limit exceeded |
+
+---
+
+### GET /users
+
+| | |
+|---|---|
+| Auth | `Bearer` (Sanctum) · super-admin only |
+| Middleware | `auth:sanctum`, `can:super-admin` |
+
+**Query parameters**
+
+| Param | Type | Default | Rules |
+|-------|------|---------|-------|
+| `per_page` | integer | `25` | 1–100 |
+| `cursor` | string | — | Cursor from previous page `meta.next_cursor` |
+
+**Response `200`** — cursor-paginated [UserResource](../schemas/user.md#userresource) list
+
+```json
+{
+  "data": [
+    { "id": 1, "name": "...", "email": "...", "role": "user" }
+  ],
+  "links": {
+    "first": "...",
+    "last": null,
+    "prev": null,
+    "next": "..."
+  },
+  "meta": {
+    "path": "...",
+    "per_page": 25,
+    "next_cursor": "...",
+    "prev_cursor": null
+  }
+}
+```
+
+**Errors**
+
+| HTTP | code | When |
+|------|------|------|
+| 401 | unauthenticated | Missing/invalid/expired token |
+| 403 | super_admin_required | Non-admin |
+| 422 | validation_failed | `per_page` out of range |

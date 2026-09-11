@@ -52,6 +52,7 @@ Each task from Phase 2 onward has **Done when**, **Tests**, and **Edge cases** i
 | 15 | 2.14, 3.x (Stripe billing; can run in parallel with 11 after tenant APIs exist) |
 | 18 | 2.4, 3.2, 8.2, 15.13 (settings APIs; integrations need invoice service + subscription notifications) |
 | 19 | 7.6, 8.1, 11.1, 13.4, 15.4, 3.10 (reporting; aggregates reuse time-summary + invoice patterns; exports reuse queue/notification pattern) |
+| 20 | 19.26 (production security hardening — audit gaps before VPS deploy) |
 
 **Phase 1 order note:** Task IDs 1.16–1.17 (time logs) are numbered before 1.18–1.22 but must be **built after** 1.21 — `time_logs.client_invoice_item_id` FK targets `client_invoice_items`. Follow the section order below, not numeric ID order alone.
 
@@ -1639,6 +1640,86 @@ Dashboard stats, filterable reports, saved report definitions, and async CSV exp
 
 ---
 
+## Phase 20 — Production security hardening
+
+Close production gaps identified in the security audit: token expiry, account lockout, transport headers, CORS, env safety, mass-assignment defense, and admin user list pagination.
+
+**Phase depends on:** Phase 19 complete.
+
+**Acceptance pattern (Tasks 20.1–20.7):**
+
+| Concern | Done when | Tests |
+|---------|-----------|-------|
+| Config + env | Documented in guardrail specs; `.env.example` updated | Unit or feature as listed per task |
+| Auth behavior | Matches `docs/development/security-and-auth.md` | Feature tests in `tests/Feature/Auth/` |
+| Transport | Security headers on responses; TrustProxies configured | `ProductionSecurityTest` |
+| Contract | `docs/api/endpoints/auth.md` aligned | `DocumentationTest` where routes change |
+
+### Task 20.1 — Sanctum token expiration
+
+- **Est.:** S
+- **Depends on:** 19.26
+- **Files:** `config/sanctum.php`, `.env.example`, `AuthController` (optional explicit `expiresAt`), `docs/development/security-and-auth.md`
+- **Done when:** `SANCTUM_TOKEN_EXPIRATION` defaults to 43200 minutes; expired bearer token returns `401 unauthenticated`.
+- **Tests:** Feature — `TokenExpirationTest.php`.
+- **Edge cases:** Login still deletes all tokens before issuing a new one.
+
+### Task 20.2 — Per-account login lockout
+
+- **Est.:** M
+- **Depends on:** 20.1
+- **Files:** migration (`failed_login_attempts`, `locked_until`), `config/security.php`, `User` helpers, `AuthController`
+- **Done when:** After 10 failed attempts, account locked 15 minutes; same generic `422` on `errors.email`; success clears counters.
+- **Tests:** Feature — `LoginLockoutTest.php`.
+- **Edge cases:** Unknown email still only IP-throttled; lockout message must not enumerate accounts.
+
+### Task 20.3 — Transport & proxy hardening
+
+- **Est.:** M
+- **Depends on:** 20.1
+- **Files:** `app/Core/Http/Middleware/SecurityHeaders.php`, `bootstrap/app.php`, `deployment/nginx/lancehive.conf`, `deployment/README.md`
+- **Done when:** Security headers on all responses; `trustProxies` configured; nginx sample documents TLS redirect.
+- **Tests:** Feature — `ProductionSecurityTest.php` asserts headers.
+- **Edge cases:** HSTS only when request is secure.
+
+### Task 20.4 — CORS policy
+
+- **Est.:** S
+- **Depends on:** 20.3
+- **Files:** `config/cors.php`, `.env.example`
+- **Done when:** Explicit origins from `CORS_ALLOWED_ORIGINS` / `FRONTEND_URL`; no wildcard with credentials.
+- **Tests:** Config smoke — origins array non-empty in local env.
+- **Edge cases:** Bearer API — `supports_credentials: false`.
+
+### Task 20.5 — Production environment safety net
+
+- **Est.:** S
+- **Depends on:** 20.3
+- **Files:** `.env.example` production comment block, `docs/development/stack-and-environment.md`
+- **Done when:** Pre-launch checklist documented; commented prod defaults in `.env.example`.
+- **Tests:** Feature — `ProductionSecurityTest` blocks `/docs/api` when environment is production.
+- **Edge cases:** Tests run in `testing` env — override environment in test only.
+
+### Task 20.6 — Remove `role` from User mass assignment
+
+- **Est.:** S
+- **Depends on:** 20.1
+- **Files:** `app/Features/Auth/Models/User.php`, `database/factories/Auth/UserFactory.php`
+- **Done when:** `role` not in `#[Fillable]`; factories/seeders use `forceFill` or states with `afterCreating`.
+- **Tests:** Unit — `UserMassAssignmentTest.php`.
+- **Edge cases:** DB default `user` role for new rows.
+
+### Task 20.7 — Paginate GET /users
+
+- **Est.:** S
+- **Depends on:** 20.6
+- **Files:** `UserController`, `ListUsersRequest`, `docs/api/endpoints/auth.md`
+- **Done when:** `GET /users` uses cursor pagination (`per_page` max 100); response matches list envelope.
+- **Tests:** Feature — update `ShowAuthenticatedUserTest.php`; journey test updated.
+- **Edge cases:** Super-admin only; order by `id`.
+
+---
+
 ## Phase 16 — Platform growth (future)
 
 | Task | Description |
@@ -1697,13 +1778,14 @@ Respect **build order** within each PR — e.g. PR 5 must merge invoice items (1
 | 21 | 19.16 – 19.17 | Saved reports |
 | 22 | 19.18 – 19.22 | Async CSV exports |
 | 23 | 19.23 – 19.26 | Reporting isolation tests and docs |
-| 24+ | 12 – 14, 16 | Role cleanup, team, portal, growth |
+| 24 | 20.1 – 20.7 | Production security hardening |
+| 25+ | 12 – 14, 16, 21 | Role cleanup, team, portal, post-launch security, growth |
 
 ---
 
 ## Task checklist
 
-Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-11 (Phase 19 reporting complete).
+Progress legend: `[x]` done · `[ ]` not started. **Last verified:** 2026-09-11 (Phase 20 production security hardening complete).
 
 ```
 Phase 0
@@ -1909,4 +1991,13 @@ Phase 19 — Reporting ✅
 [x] 19.24 API contract markdown and schema
 [x] 19.25 DocumentationTest and Scramble coverage
 [x] 19.26 Architecture and ERD documentation
+
+Phase 20 — Production security hardening ✅
+[x] 20.1 Sanctum token expiration
+[x] 20.2 Per-account login lockout
+[x] 20.3 Transport and proxy hardening
+[x] 20.4 CORS policy
+[x] 20.5 Production environment safety net
+[x] 20.6 Remove role from User mass assignment
+[x] 20.7 Paginate GET /users
 ```

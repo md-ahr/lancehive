@@ -25,7 +25,7 @@ it('denies freelancer access to users endpoint', function () {
         ->assertForbidden();
 });
 
-it('allows super admin to list all users', function () {
+it('allows super admin to list all users with cursor pagination', function () {
     $superAdmin = User::factory()->superAdmin()->create();
     $freelancer = User::factory()->freelancer()->create();
     $client = User::factory()->client()->create();
@@ -35,11 +35,13 @@ it('allows super admin to list all users', function () {
     $this->getJson($this->apiUrl('users'))
         ->assertOk()
         ->assertJsonStructure([
-            'users' => [
+            'data' => [
                 '*' => ['id', 'name', 'email', 'role'],
             ],
+            'links' => ['first', 'last', 'prev', 'next'],
+            'meta' => ['path', 'per_page', 'next_cursor', 'prev_cursor'],
         ])
-        ->assertJsonCount(3, 'users')
+        ->assertJsonCount(3, 'data')
         ->assertJsonFragment([
             'id' => $superAdmin->id,
             'email' => $superAdmin->email,
@@ -64,5 +66,13 @@ it('allows super admin to list all users with bearer token', function () {
     $this->withToken($token)
         ->getJson($this->apiUrl('users'))
         ->assertOk()
-        ->assertJsonCount(3, 'users');
+        ->assertJsonCount(3, 'data');
+});
+
+it('rejects per_page above maximum for users list', function () {
+    Sanctum::actingAs(User::factory()->superAdmin()->create());
+
+    $this->getJson($this->apiUrl('users').'?per_page=101')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['per_page']);
 });

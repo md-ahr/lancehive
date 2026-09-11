@@ -22,17 +22,27 @@ final class AuthController extends Controller
 {
     public function login(LoginRequest $request): LoginResource
     {
-        $user = User::where('email', $request->email)->first();
+        $user = User::query()->where('email', $request->email)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
+        if ($user !== null && $user->isLoginLocked()) {
+            throw $this->invalidCredentialsException();
         }
 
+        if (! $user || ! Hash::check($request->password, $user->password)) {
+            $user?->recordFailedLogin();
+
+            throw $this->invalidCredentialsException();
+        }
+
+        $user->clearLoginLockout();
         $user->tokens()->delete();
 
-        $token = $user->createToken('api-token')->plainTextToken;
+        $expirationMinutes = config('sanctum.expiration');
+        $expiresAt = $expirationMinutes > 0
+            ? now()->addMinutes($expirationMinutes)
+            : null;
+
+        $token = $user->createToken('api-token', ['*'], $expiresAt)->plainTextToken;
 
         return new LoginResource([
             'token' => $token,
@@ -76,6 +86,13 @@ final class AuthController extends Controller
 
         throw ValidationException::withMessages([
             'email' => [__($status)],
+        ]);
+    }
+
+    private function invalidCredentialsException(): ValidationException
+    {
+        return ValidationException::withMessages([
+            'email' => ['The provided credentials are incorrect.'],
         ]);
     }
 }

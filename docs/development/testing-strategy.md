@@ -229,6 +229,10 @@ See [acceptance-criteria.md](../multi-tenant/acceptance-criteria.md) § Phase 11
 | Invoices | Member cannot POST invoice → 403 |
 | Read-only | POST while lapsed → 403 `workspace_read_only` |
 | Rate limit | 6th login in 1 min → 429 |
+| Expired token | Bearer token past `SANCTUM_TOKEN_EXPIRATION` → 401 |
+| Account lockout | 10 failed logins → still 422 on `errors.email`; success after lock expires |
+| Production docs | `APP_ENV=production` → `/docs/api` not accessible |
+| Security headers | API response includes `X-Content-Type-Options: nosniff` |
 
 ---
 

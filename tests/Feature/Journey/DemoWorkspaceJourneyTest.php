@@ -178,7 +178,7 @@ it('allows super admin to login and list users', function () {
     $this->withToken($token)
         ->getJson($this->apiUrl('users'))
         ->assertOk()
-        ->assertJsonCount(5, 'users');
+        ->assertJsonCount(5, 'data');
 });
 
 it('allows workspace owner to login and access profile', function () {

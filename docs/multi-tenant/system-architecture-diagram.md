@@ -83,7 +83,7 @@ flowchart TB
     Routes --> Queue
     Queue --> Jobs
     Jobs --> DB
-    Notif --> Mail[SMTP / Mail provider]
+    Notif --> Mail[Resend / Mailpit SMTP]
 ```
 
 ### 0.2 Authenticated read request (e.g. list projects)
@@ -262,7 +262,7 @@ sequenceDiagram
 | Models | TenantContext | Global scope | Auto-filter by freelancer_id |
 | SubscriptionService | Stripe | HTTPS REST | Checkout, swap, cancel |
 | Stripe | WebhookController | HTTPS POST | Payment events |
-| OnboardingService | Mail | SMTP | Invite emails |
+| OnboardingService | Mail | Resend (prod) / Mailpit (local) | Invite emails |
 | Scheduler | Queue | Internal | Daily overdue invoice job |
 | Queue Worker | PostgreSQL | SQL | Async job execution |
 

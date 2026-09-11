@@ -36,6 +36,7 @@ Composer constraints (`composer.json`) vs typical locked versions:
 | `laravel/sail` | `^1.67` | Docker dev environment |
 | `laravel/pint` | `^1.27` | Code formatter |
 | `laravel/boost` | `^2.8` | MCP dev tools (dev only) |
+| `resend/resend-php` | `^1.14` | Resend mail transport (staging/production) |
 
 Check live versions before relying on package APIs:
 
@@ -85,6 +86,8 @@ vendor/bin/sail stop
 | `config/cache.php` | Redis store |
 | `config/sanctum.php` | Token abilities, expiration |
 | `config/auth.php` | Guards, providers |
+| `config/mail.php` | Mailers (`smtp`, `resend`, `log`, …); default from `MAIL_MAILER` |
+| `config/services.php` | Third-party keys (`RESEND_API_KEY`, Stripe, AWS) |
 | `bootstrap/app.php` | Routing, JSON exception rendering, `ApiException` handler |
 | `phpunit.xml` | Test env overrides (sqlite, array cache, sync queue) |
 | `compose.yaml` | Sail Docker services |
@@ -164,7 +167,13 @@ SESSION_LIFETIME=120
 
 Tests override: `QUEUE_CONNECTION=sync`, `SESSION_DRIVER=array`.
 
-### Mail (Sail → Mailpit)
+### Mail
+
+Transactional email uses Laravel Notifications (`via: ['mail']`). All notification classes are queued — a running queue worker is required for delivery in non-test environments.
+
+#### Local Sail → Mailpit
+
+Capture outbound mail without a third-party account:
 
 ```dotenv
 MAIL_MAILER=smtp
@@ -178,6 +187,30 @@ FORWARD_MAILPIT_DASHBOARD_PORT=8025
 ```
 
 Dashboard: `http://localhost:8025`
+
+#### Staging / production → Resend
+
+Laravel 13’s built-in Resend driver (`resend/resend-php`). Keep Mailpit locally; set Resend only on deployed environments:
+
+```dotenv
+MAIL_MAILER=resend
+MAIL_FROM_ADDRESS="noreply@yourdomain.com"
+MAIL_FROM_NAME="${APP_NAME}"
+RESEND_API_KEY=re_xxxxxxxx
+```
+
+**Before go-live:**
+
+1. Verify your sending domain in the [Resend dashboard](https://resend.com/domains).
+2. Set `MAIL_FROM_ADDRESS` to an address on that verified domain.
+3. Store `RESEND_API_KEY` as a deployment secret (never commit real keys).
+4. Ensure a queue worker processes jobs (`queue:work` or managed queue).
+
+Config wiring (already in repo): `config/mail.php` mailer `resend` + `config/services.php` → `services.resend.key`.
+
+#### Tests
+
+PHPUnit forces `MAIL_MAILER=array` — no real mail is sent during tests.
 
 ### Logging
 
@@ -229,7 +262,9 @@ WWWGROUP=1000
 | `CACHE_STORE` | `redis` | `array` | `redis` |
 | `REDIS_HOST` | `redis` | — | managed Redis |
 | `QUEUE_CONNECTION` | `database` | `sync` | `redis` or managed queue |
-| `MAIL_MAILER` | `smtp` (Mailpit) | `array` | real provider |
+| `MAIL_MAILER` | `smtp` (Mailpit) | `array` | `resend` |
+| `RESEND_API_KEY` | *(empty)* | — | deployment secret |
+| `MAIL_FROM_ADDRESS` | `hello@example.com` | — | verified Resend sender domain |
 
 ---
 

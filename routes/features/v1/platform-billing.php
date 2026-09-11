@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Cashier\Http\Middleware\VerifyWebhookSignature;
 
 Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle'])
-    ->middleware(VerifyWebhookSignature::class)
+    ->middleware([VerifyWebhookSignature::class, 'throttle:webhooks'])
     ->name('webhooks.stripe');
 
 Route::middleware(['auth:sanctum', 'freelancer.context'])
@@ -15,11 +15,14 @@ Route::middleware(['auth:sanctum', 'freelancer.context'])
             ->name('subscription.show');
 
         Route::post('/subscription/checkout', [SubscriptionController::class, 'checkout'])
+            ->middleware('throttle:subscription')
             ->name('subscription.checkout');
 
         Route::post('/subscription/swap', [SubscriptionController::class, 'swap'])
+            ->middleware('throttle:subscription')
             ->name('subscription.swap');
 
         Route::post('/subscription/cancel', [SubscriptionController::class, 'cancel'])
+            ->middleware('throttle:subscription')
             ->name('subscription.cancel');
     });

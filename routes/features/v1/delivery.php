@@ -36,7 +36,7 @@ Route::middleware(['auth:sanctum', 'freelancer.context'])
         Route::get('/tasks/{task}/time-logs', [TimeLogController::class, 'indexForTask'])
             ->name('tasks.time-logs.index');
 
-        Route::middleware('writable.subscription')->group(function (): void {
+        Route::middleware(['writable.subscription', 'throttle:tenant-writes'])->group(function (): void {
             Route::post('/clients', [ClientController::class, 'store'])
                 ->name('clients.store');
 

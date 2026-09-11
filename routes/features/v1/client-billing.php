@@ -11,7 +11,7 @@ Route::middleware(['auth:sanctum', 'freelancer.context'])
         Route::get('/client-invoices/{clientInvoice}', [ClientInvoiceController::class, 'show'])
             ->name('client-invoices.show');
 
-        Route::middleware('writable.subscription')->group(function (): void {
+        Route::middleware(['writable.subscription', 'throttle:tenant-writes'])->group(function (): void {
             Route::post('/projects/{project}/client-invoices', [ClientInvoiceController::class, 'store'])
                 ->name('projects.client-invoices.store');
 

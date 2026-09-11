@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Features\Reporting\Services;
 
+use App\Core\Tenancy\TenantContext;
 use App\Features\ClientBilling\Enums\ClientInvoiceStatus;
 use App\Features\ClientBilling\Models\ClientInvoice;
 use App\Features\Delivery\Enums\ClientStatus;
@@ -16,6 +17,8 @@ use App\Features\PlatformBilling\Enums\SubscriptionStatus;
 use App\Features\PlatformBilling\Models\Plan;
 use App\Features\PlatformBilling\Models\Subscription;
 use App\Features\PlatformBilling\Models\SubscriptionCharge;
+use App\Features\Reporting\Cache\PlatformStatsCache;
+use App\Features\Reporting\Cache\WorkspaceStatsCache;
 use App\Features\Tenancy\Enums\FreelancerStatus;
 use App\Features\Tenancy\Models\Freelancer;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,6 +26,12 @@ use Illuminate\Support\Facades\DB;
 
 final class ReportQueryService
 {
+    public function __construct(
+        private readonly TenantContext $tenantContext,
+        private readonly WorkspaceStatsCache $workspaceStatsCache,
+        private readonly PlatformStatsCache $platformStatsCache,
+    ) {}
+
     /**
      * @return array{
      *     active_clients: int,
@@ -33,6 +42,29 @@ final class ReportQueryService
      * }
      */
     public function workspaceOverview(): array
+    {
+        $freelancerId = $this->tenantContext->freelancerId();
+
+        if ($freelancerId === null) {
+            return $this->computeWorkspaceOverview();
+        }
+
+        return $this->workspaceStatsCache->remember(
+            $freelancerId,
+            fn (): array => $this->computeWorkspaceOverview(),
+        );
+    }
+
+    /**
+     * @return array{
+     *     active_clients: int,
+     *     active_projects: int,
+     *     hours_this_month: string,
+     *     unbilled_hours: string,
+     *     outstanding_invoice_total: string
+     * }
+     */
+    private function computeWorkspaceOverview(): array
     {
         $activeClients = Client::query()
             ->where('status', ClientStatus::Active)
@@ -71,6 +103,21 @@ final class ReportQueryService
      * }
      */
     public function platformOverview(): array
+    {
+        return $this->platformStatsCache->remember(
+            fn (): array => $this->computePlatformOverview(),
+        );
+    }
+
+    /**
+     * @return array{
+     *     freelancers_by_status: array<string, int>,
+     *     subscriptions_by_plan: list<array{plan_id: int, plan_name: string, count: int}>,
+     *     subscriptions_by_status: array<string, int>,
+     *     trials_ending_soon: int
+     * }
+     */
+    private function computePlatformOverview(): array
     {
         $freelancersByStatus = [];
         foreach (FreelancerStatus::cases() as $status) {

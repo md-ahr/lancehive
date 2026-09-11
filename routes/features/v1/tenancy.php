@@ -12,7 +12,7 @@ Route::middleware(['auth:sanctum', 'freelancer.context'])
         Route::get('/members', [MemberController::class, 'index'])
             ->name('members.index');
 
-        Route::middleware('writable.subscription')->group(function (): void {
+        Route::middleware(['writable.subscription', 'throttle:tenant-writes'])->group(function (): void {
             Route::patch('/workspace/settings', [WorkspaceSettingsController::class, 'update'])
                 ->name('workspace.settings.update');
 

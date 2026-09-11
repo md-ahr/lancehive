@@ -7,7 +7,7 @@ use App\Features\Settings\Http\Controllers\PlatformSettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')
-    ->middleware(['auth:sanctum', 'can:super-admin'])
+    ->middleware(['auth:sanctum', 'can:super-admin', 'throttle:admin'])
     ->group(function (): void {
         Route::get('/freelancers', [FreelancerController::class, 'index'])
             ->name('admin.freelancers.index');

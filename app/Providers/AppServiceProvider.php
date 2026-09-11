@@ -17,10 +17,8 @@ use App\Features\Tenancy\Models\Freelancer;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Cashier\Cashier;
@@ -51,9 +49,6 @@ class AppServiceProvider extends ServiceProvider
                 ? $rule->mixedCase()->symbols()->uncompromised()
                 : $rule;
         });
-
-        RateLimiter::for('login', fn ($request) => Limit::perMinute(5)->by($request->ip()));
-        RateLimiter::for('password-reset', fn ($request) => Limit::perMinute(3)->by($request->ip()));
 
         ResetPassword::createUrlUsing(function (User $user, string $token) {
             return config('app.frontend_url').'/reset-password'

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Features\Settings\Services;
+namespace App\Features\Settings\Cache;
 
-use App\Features\Settings\Cache\WorkspaceSettingsCache;
 use App\Features\Tenancy\Models\Freelancer;
+use Illuminate\Support\Facades\Cache;
 
-final class WorkspaceSettingsService
+final class WorkspaceSettingsCache
 {
-    public function __construct(private readonly WorkspaceSettingsCache $cache) {}
+    private const int TTL_SECONDS = 300;
 
     /**
      * @return array{
@@ -20,44 +20,31 @@ final class WorkspaceSettingsService
      *     business_name: string|null,
      *     business_email: string|null,
      *     business_address: string|null
-     * }
+     * }|null
      */
-    public function get(Freelancer $freelancer): array
+    public function get(int $freelancerId): ?array
     {
-        $settings = $this->cache->get($freelancer->id);
+        /** @var array<string, mixed>|null $settings */
+        $settings = Cache::remember(
+            $this->key($freelancerId),
+            self::TTL_SECONDS,
+            function () use ($freelancerId): ?array {
+                $freelancer = Freelancer::query()->find($freelancerId);
 
-        if ($settings === null) {
-            return $this->toArray($freelancer);
-        }
+                if ($freelancer === null) {
+                    return null;
+                }
+
+                return $this->toArray($freelancer);
+            },
+        );
 
         return $settings;
     }
 
-    /**
-     * @param  array<string, mixed>  $data
-     */
-    public function update(Freelancer $freelancer, array $data): Freelancer
+    public function forget(int $freelancerId): void
     {
-        $freelancer->update($data);
-        $this->cache->forget($freelancer->id);
-
-        return $freelancer->fresh();
-    }
-
-    public function getDefaultCurrency(int $freelancerId): string
-    {
-        $settings = $this->cache->get($freelancerId);
-        $currency = $settings['default_currency'] ?? null;
-
-        if (is_string($currency) && $currency !== '') {
-            return $currency;
-        }
-
-        $currency = Freelancer::query()
-            ->whereKey($freelancerId)
-            ->value('default_currency');
-
-        return is_string($currency) && $currency !== '' ? $currency : 'BDT';
+        Cache::forget($this->key($freelancerId));
     }
 
     /**
@@ -84,5 +71,10 @@ final class WorkspaceSettingsService
             'business_email' => $freelancer->business_email,
             'business_address' => $freelancer->business_address,
         ];
+    }
+
+    private function key(int $freelancerId): string
+    {
+        return "workspace_settings:freelancer:{$freelancerId}";
     }
 }

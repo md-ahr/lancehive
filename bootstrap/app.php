@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -66,6 +67,20 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (NotFoundHttpException $exception, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return (new ApiException(ApiErrorCode::NotFound))->render($request);
+            }
+
+            return null;
+        });
+
+        $exceptions->render(function (ThrottleRequestsException $exception, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                $response = (new ApiException(ApiErrorCode::TooManyRequests))->render($request);
+
+                if ($retryAfter = $exception->getHeaders()['Retry-After'] ?? null) {
+                    $response->headers->set('Retry-After', (string) $retryAfter);
+                }
+
+                return $response;
             }
 
             return null;

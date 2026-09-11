@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Features\PlatformBilling\Models\Plan;
 use App\Features\PlatformBilling\Models\Subscription;
+use App\Features\Settings\Cache\WorkspaceSettingsCache;
 use App\Features\Tenancy\Enums\FreelancerMembershipRole;
 use App\Features\Tenancy\Models\Freelancer;
 use App\Features\Tenancy\Models\FreelancerMembership;
@@ -34,6 +35,24 @@ it('allows owners to patch workspace settings', function () {
         ->assertOk()
         ->assertJsonPath('invoice_number_prefix', 'ACME')
         ->assertJsonPath('default_currency', 'EUR');
+});
+
+it('refreshes workspace settings cache after patch', function () {
+    $workspace = $this->createTenantWorkspace();
+    $cache = app(WorkspaceSettingsCache::class);
+
+    $this->actingAsTenant($workspace['user'], $workspace['freelancer'])
+        ->getJson($this->apiUrl('workspace/settings'))
+        ->assertOk();
+
+    $this->actingAsTenant($workspace['user'], $workspace['freelancer'])
+        ->patchJson($this->apiUrl('workspace/settings'), [
+            'business_name' => 'Updated Studio',
+        ])
+        ->assertOk()
+        ->assertJsonPath('business_name', 'Updated Studio');
+
+    expect($cache->get($workspace['freelancer']->id)['business_name'])->toBe('Updated Studio');
 });
 
 it('denies members from patching workspace settings', function () {

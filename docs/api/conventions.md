@@ -61,11 +61,14 @@ Resolved by `EnsureClientContext` middleware.
 
 | Group | Middleware | Writes when subscription lapsed |
 |-------|------------|-----------------------------------|
-| Public auth | `throttle:*` | N/A |
-| Authenticated | `auth:sanctum` | N/A |
-| Tenant | `auth:sanctum`, `freelancer.context` | Blocked by `writable.subscription` |
-| Admin | `auth:sanctum`, `can:super-admin` | Always allowed |
-| Subscription self-serve | `auth:sanctum`, `freelancer.context` | Always allowed (checkout/swap/cancel) |
+| Public auth | `throttle:login`, `throttle:password-reset` | N/A |
+| Authenticated | `auth:sanctum`, `throttle:api` | N/A |
+| Tenant read | `auth:sanctum`, `freelancer.context`, `throttle:api` | N/A |
+| Tenant write | above + `writable.subscription`, `throttle:tenant-writes` | Blocked when lapsed |
+| Reports (run/export create) | `throttle:reports` (plus tenant/admin middleware) | Owner/admin only |
+| Admin | `auth:sanctum`, `can:super-admin`, `throttle:admin` | Always allowed |
+| Subscription mutations | `throttle:subscription` on checkout/swap/cancel | Always allowed |
+| Stripe webhooks | signature verification, `throttle:webhooks` | N/A |
 
 ## Pagination (list endpoints)
 

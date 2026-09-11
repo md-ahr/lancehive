@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 it('schedules mark overdue client invoices daily', function () {
     $this->artisan('schedule:list')
-        ->expectsOutputToContain('MarkOverdueClientInvoices')
+        ->expectsOutputToContain('MarkOverdueClientInvoicesJob')
         ->assertSuccessful();
 });
 

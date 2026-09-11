@@ -167,6 +167,25 @@ SESSION_LIFETIME=120
 
 Tests override: `QUEUE_CONNECTION=sync`, `SESSION_DRIVER=array`.
 
+#### Queue architecture
+
+| Use case | Mechanism | Location |
+|----------|-----------|----------|
+| Transactional email | Queued notifications (`ShouldQueue` + `via: ['mail']`) | `app/Features/*/Notifications/` |
+| Report CSV export | `GenerateReportExportJob::dispatch()` after creating a pending `ReportExport` | `ReportExportController`, `AdminReportExportController` |
+| Daily overdue invoices | Scheduled job → queue (`MarkOverdueClientInvoicesJob`) | `bootstrap/app.php` |
+| Trial-ending reminders | Scheduled Artisan command (sends queued notifications inline) | `subscriptions:notify-trial-ending` |
+
+**Drivers:** `database` locally (Sail) · `redis` or a managed queue in production. `config/queue.php` sets `after_commit => true` on `database` and `redis` so queued work runs only after open DB transactions commit.
+
+**Workers (required outside tests):**
+
+- Sail: `queue` service in `compose.yaml` runs `php artisan queue:work` automatically.
+- Production: managed queue (Laravel Cloud) or a dedicated `queue:work` / Horizon process.
+- Scheduler: cron `* * * * * php artisan schedule:run` — required for daily jobs/commands.
+
+Without a running worker, queued notifications and `GenerateReportExportJob` stay in the `jobs` table; Mailpit/Resend will not receive mail.
+
 ### Mail
 
 Transactional email uses Laravel Notifications (`via: ['mail']`). All notification classes are queued — a running queue worker is required for delivery in non-test environments.

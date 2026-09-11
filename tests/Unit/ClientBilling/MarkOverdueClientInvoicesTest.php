@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Features\ClientBilling\Enums\ClientInvoiceStatus;
-use App\Features\ClientBilling\Jobs\MarkOverdueClientInvoices;
+use App\Features\ClientBilling\Jobs\MarkOverdueClientInvoicesJob;
 use App\Features\ClientBilling\Models\ClientInvoice;
 
 it('marks sent invoices past due date as overdue', function () {
@@ -23,7 +23,7 @@ it('marks sent invoices past due date as overdue', function () {
         'sent_at' => now()->subDays(10),
     ]);
 
-    (new MarkOverdueClientInvoices)->handle();
+    (new MarkOverdueClientInvoicesJob)->handle();
 
     expect($overdue->fresh()->status)->toBe(ClientInvoiceStatus::Overdue)
         ->and($current->fresh()->status)->toBe(ClientInvoiceStatus::Sent)
@@ -39,7 +39,7 @@ it('is idempotent for invoices already marked overdue', function () {
         'sent_at' => now()->subDays(5),
     ]);
 
-    (new MarkOverdueClientInvoices)->handle();
+    (new MarkOverdueClientInvoicesJob)->handle();
 
     expect($invoice->fresh()->status)->toBe(ClientInvoiceStatus::Overdue);
 });

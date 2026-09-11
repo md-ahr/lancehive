@@ -9,7 +9,7 @@ use App\Features\ClientBilling\Models\ClientInvoice;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
-final class MarkOverdueClientInvoices implements ShouldQueue
+final class MarkOverdueClientInvoicesJob implements ShouldQueue
 {
     use Queueable;
 

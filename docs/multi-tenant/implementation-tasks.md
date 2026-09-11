@@ -895,7 +895,7 @@ Build **after** Task 1.21 — `client_invoice_item_id` FK targets `client_invoic
 
 - **Est.:** S
 - **Depends on:** 1.20
-- **Files:** `app/Features/ClientBilling/Jobs/MarkOverdueClientInvoices.php` (scheduled daily in `bootstrap/app.php`)
+- **Files:** `app/Features/ClientBilling/Jobs/MarkOverdueClientInvoicesJob.php` (scheduled daily in `bootstrap/app.php`)
 - **Actions:** Daily — `sent` past `due_date` → `overdue`
 - **Done when:** Job marks eligible invoices overdue.
 - **Tests:** Unit/job — sent + past due → overdue; paid skipped.

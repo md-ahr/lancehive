@@ -19,6 +19,7 @@
     },
     "require-dev": {
         "albertoarena/laravel-truss": "^1.11",
+        "andreapollastri/checkpoint": "^1.1",
         "fakerphp/faker": "^1.23",
         "laravel/boost": "^2.8",
         "laravel/pail": "^1.2.5",

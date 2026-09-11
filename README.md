@@ -1,37 +1,45 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# LanceHive
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Multi-tenant freelancer workspace API — clients, projects, time tracking, client invoicing, and platform subscriptions. Headless backend consumed by a separate SPA at `/api/v1`.
 
-## About Laravel
+**Stack:** Laravel 13 · PHP 8.5 · PostgreSQL 18 · Redis · Sanctum · Sail · Pest · Scramble
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Quick start
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+```bash
+composer install
+cp .env.example .env   # or: composer run setup
+vendor/bin/sail up -d
+vendor/bin/sail artisan key:generate
+vendor/bin/sail artisan migrate:fresh --seed
+```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Surface | URL |
+|---------|-----|
+| API discovery | `GET /` |
+| REST API | `/api/v1/*` |
+| OpenAPI UI | `/docs/api` |
+| OpenAPI JSON | `/docs/api.json` |
+| Health | `/up` |
 
-## Learning Laravel
+All PHP, Artisan, Composer, and test commands run through Sail: `vendor/bin/sail artisan …`
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+After seeding, dev accounts use password `password` — see [multi-tenant README](docs/multi-tenant/README.md#dev-credentials-local-only) for roles and the demo workspace.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Documentation
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+| Area | Entry point |
+|------|-------------|
+| API contract | [docs/api/README.md](docs/api/README.md) |
+| User journeys (auth → delivery → billing) | [docs/api/user-journey.md](docs/api/user-journey.md) |
+| Domain & tenancy | [docs/multi-tenant/README.md](docs/multi-tenant/README.md) |
+| Build backlog | [docs/multi-tenant/implementation-tasks.md](docs/multi-tenant/implementation-tasks.md) |
+| Coding conventions & stack | [docs/development/README.md](docs/development/README.md) |
+| Feature module layout | [docs/project-structure/README.md](docs/project-structure/README.md) |
 
-## Agentic Development
+## Agentic development
 
-LanceHive is built for AI-assisted development (Cursor, Claude Code, Copilot). Start here:
+LanceHive is built for AI-assisted development (Cursor, Claude Code, Copilot).
 
 | Resource | Purpose |
 |----------|---------|
@@ -42,20 +50,17 @@ LanceHive is built for AI-assisted development (Cursor, Claude Code, Copilot). S
 
 **Example prompt:** `Implement task 2.1 using lancehive-build-task. Activate lancehive-guardrails.`
 
-[Laravel Boost](https://laravel.com/docs/ai) is installed — MCP via `.mcp.json` (`vendor/bin/sail artisan boost:mcp`). Run all PHP/Artisan commands through Sail (`vendor/bin/sail artisan …`).
+[Laravel Boost](https://laravel.com/docs/ai) is installed — MCP via `.mcp.json` (`vendor/bin/sail artisan boost:mcp`).
 
-## Contributing
+## Check security
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan truss:doctor
+php artisan checkpoint:scan
+composer audit
+php artisan optimize
+```
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT

@@ -8,6 +8,7 @@ use App\Features\Delivery\Models\Client;
 use App\Features\PlatformBilling\Contracts\StripeGateway;
 use App\Features\Tenancy\Models\Freelancer;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Cache;
 use Tests\Concerns\ActsAsTenant;
 use Tests\Support\FakeStripeGateway;
 
@@ -20,6 +21,8 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         $this->app->instance(StripeGateway::class, new FakeStripeGateway);
+
+        Cache::store((string) config('rate-limiting.store'))->flush();
     }
 
     protected function setTenantContext(Freelancer|int $freelancer): void

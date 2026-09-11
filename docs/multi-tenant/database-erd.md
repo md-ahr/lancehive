@@ -791,5 +791,6 @@ Required indexes for filter/search/join paths. See [architecture-review.md](./ar
 | `report_exports` | `(freelancer_id, requested_by_user_id, status)` | INDEX | Export list and status filter |
 | `report_exports` | `expires_at` | INDEX | Purge job |
 | `report_exports` | `saved_report_id` | INDEX | Export from saved report |
+| `report_exports` | `requested_by_user_id` | INDEX | User FK joins and cascades |
 
 **Note:** Laravel adds indexes on foreign keys by default in migrations — still declare explicitly in migration files for reviewability.

@@ -2,7 +2,6 @@
 
 use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
 use Dedoc\Scramble\SecurityDocumentation\MiddlewareAuthSecurityStrategy;
-use Dedoc\Scramble\Support\Generator\SecurityScheme;
 
 return [
     /*
@@ -188,7 +187,7 @@ return [
         MiddlewareAuthSecurityStrategy::class,
         [
             'middleware' => ['auth:sanctum'],
-            'scheme' => SecurityScheme::http('bearer'),
+            // scheme defaults to SecurityScheme::http('bearer') in the strategy constructor.
         ],
     ],
 ];

@@ -43,6 +43,7 @@ it('indexes foreign keys without redundant left-prefix duplicates', function () 
         'client_memberships_user_id_index',
         'subscriptions_plan_id_index',
         'time_logs_user_id_index',
+        'report_exports_requested_by_user_id_index',
     ];
 
     foreach ($requiredIndexes as $indexName) {

@@ -27,6 +27,7 @@ return new class extends Migration
             $table->index(['freelancer_id', 'requested_by_user_id', 'status']);
             $table->index('expires_at');
             $table->index('saved_report_id');
+            $table->index('requested_by_user_id');
         });
     }
 

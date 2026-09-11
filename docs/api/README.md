@@ -6,6 +6,7 @@ Human-readable API contract for the LanceHive MVP (`/api/v1`). This is the **des
 
 | Doc | Purpose |
 |-----|---------|
+| [user-journey.md](./user-journey.md) | Step-by-step API flows by persona (auth → delivery → billing) |
 | [conventions.md](./conventions.md) | Base URL, auth, headers, pagination, data types |
 | [errors.md](./errors.md) | Error catalog with HTTP status + machine-readable `code` |
 | [schemas/](./schemas/) | Reusable JSON shapes (Resources) |

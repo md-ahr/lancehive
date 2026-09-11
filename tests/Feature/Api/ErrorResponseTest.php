@@ -22,6 +22,18 @@ it('renders api exception with message and code for workspace read only', functi
         ]);
 });
 
+it('renders api exception with message and code for not found', function () {
+    $exception = new ApiException(ApiErrorCode::NotFound);
+
+    $response = $exception->render(Request::create('/api/v1/clients/999', 'GET'));
+
+    expect($response->getStatusCode())->toBe(404)
+        ->and($response->getData(true))->toBe([
+            'message' => 'Resource not found.',
+            'code' => 'not_found',
+        ]);
+});
+
 it('renders api exception with message and code for plan limit exceeded', function () {
     $exception = new ApiException(
         ApiErrorCode::PlanLimitExceeded,
@@ -37,9 +49,22 @@ it('renders api exception with message and code for plan limit exceeded', functi
         ]);
 });
 
+it('returns not found json for unknown api routes', function () {
+    $this->getJson($this->apiUrl('test'))
+        ->assertNotFound()
+        ->assertJson([
+            'message' => 'Resource not found.',
+            'code' => 'not_found',
+        ]);
+});
+
 it('returns unauthenticated when accessing protected route without token', function () {
     $this->getJson($this->apiUrl('me'))
-        ->assertUnauthorized();
+        ->assertUnauthorized()
+        ->assertJson([
+            'message' => 'Unauthenticated.',
+            'code' => 'unauthenticated',
+        ]);
 });
 
 it('returns super admin required when non admin accesses users list', function () {

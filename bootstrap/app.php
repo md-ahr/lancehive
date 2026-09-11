@@ -10,6 +10,7 @@ use App\Features\ClientBilling\Jobs\MarkOverdueClientInvoicesJob;
 use App\Features\PlatformBilling\Console\NotifyTrialEndingCommand;
 use App\Features\PlatformBilling\Console\SyncPlansWithStripeCommand;
 use App\Features\Reporting\Console\PurgeExpiredReportExportsCommand;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
@@ -49,36 +50,44 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
-        );
+        $wantsApiJson = fn (Request $request): bool => $request->is('api/*') || $request->expectsJson();
 
-        $exceptions->render(function (ApiException $exception, Request $request) {
-            if ($request->is('api/*') || $request->expectsJson()) {
+        $exceptions->shouldRenderJsonWhen($wantsApiJson);
+
+        $exceptions->render(function (ApiException $exception, Request $request) use ($wantsApiJson) {
+            if ($wantsApiJson($request)) {
                 return $exception->render($request);
             }
 
             return null;
         });
 
-        $exceptions->render(function (ModelNotFoundException $exception, Request $request) {
-            if ($request->is('api/*') || $request->expectsJson()) {
+        $exceptions->render(function (AuthenticationException $exception, Request $request) use ($wantsApiJson) {
+            if ($wantsApiJson($request)) {
+                return (new ApiException(ApiErrorCode::Unauthenticated))->render($request);
+            }
+
+            return null;
+        });
+
+        $exceptions->render(function (ModelNotFoundException $exception, Request $request) use ($wantsApiJson) {
+            if ($wantsApiJson($request)) {
                 return (new ApiException(ApiErrorCode::NotFound))->render($request);
             }
 
             return null;
         });
 
-        $exceptions->render(function (NotFoundHttpException $exception, Request $request) {
-            if ($request->is('api/*') || $request->expectsJson()) {
+        $exceptions->render(function (NotFoundHttpException $exception, Request $request) use ($wantsApiJson) {
+            if ($wantsApiJson($request)) {
                 return (new ApiException(ApiErrorCode::NotFound))->render($request);
             }
 
             return null;
         });
 
-        $exceptions->render(function (ThrottleRequestsException $exception, Request $request) {
-            if ($request->is('api/*') || $request->expectsJson()) {
+        $exceptions->render(function (ThrottleRequestsException $exception, Request $request) use ($wantsApiJson) {
+            if ($wantsApiJson($request)) {
                 $response = (new ApiException(ApiErrorCode::TooManyRequests))->render($request);
 
                 if ($retryAfter = $exception->getHeaders()['Retry-After'] ?? null) {
@@ -91,8 +100,8 @@ return Application::configure(basePath: dirname(__DIR__))
             return null;
         });
 
-        $exceptions->render(function (AccessDeniedHttpException $exception, Request $request) {
-            if (! $request->is('api/*') && ! $request->expectsJson()) {
+        $exceptions->render(function (AccessDeniedHttpException $exception, Request $request) use ($wantsApiJson) {
+            if (! $wantsApiJson($request)) {
                 return null;
             }
 
